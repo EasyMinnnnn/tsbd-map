@@ -2,35 +2,29 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bản đồ TSBĐ & TSSS - BIDV</title>
-
-  <!-- Leaflet & Screenshot -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css" />
-
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
     }
-
     #map {
       width: 100vw;
       height: 100vh;
     }
-
     .controls {
       position: absolute;
       top: 10px;
       left: 60px;
-      background-color: rgba(0, 125, 120, 0.8);
+      background-color: rgba(0, 125, 120, 0.9);
       padding: 10px;
       border-radius: 8px;
       color: white;
       z-index: 1000;
     }
-
     .controls input {
       margin: 4px 0;
       padding: 6px;
@@ -39,7 +33,6 @@
       width: 220px;
       font-size: 14px;
     }
-
     .controls button {
       background-color: #f2c94c;
       color: black;
@@ -50,29 +43,27 @@
       border-radius: 4px;
       cursor: pointer;
     }
-
     .leaflet-tooltip.custom-label {
-      background-color: white;
+      background-color: #007d78;
       border: 2px solid #007d78;
-      padding: 6px 12px;
-      font-size: 14px;
-      font-weight: bold;
-      border-radius: 6px;
       color: #f2c94c;
+      font-weight: bold;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 13px;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-      position: relative;
     }
-
-    .leaflet-tooltip.custom-label::after {
+    .leaflet-tooltip::after {
       content: "";
       position: absolute;
-      bottom: -16px;
+      bottom: -10px;
       left: 50%;
       transform: translateX(-50%);
       width: 0;
       height: 0;
-      border: 14px solid transparent;
-      border-top: 14px solid #007d78;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 10px solid #007d78;
     }
   </style>
 </head>
@@ -90,7 +81,6 @@
 
   <div id="map"></div>
 
-  <!-- JS Libraries -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
 
@@ -109,33 +99,34 @@
       position: 'topright'
     }).addTo(map);
 
-    function createCustomIcon(iconUrl, size = [38, 38]) {
+    function createCustomIcon(imgPath, size = [40, 40]) {
       return L.icon({
-        iconUrl,
+        iconUrl: imgPath,
         iconSize: size,
-        iconAnchor: [size[0] / 2, size[1]], // bottom center
+        iconAnchor: [size[0] / 2, size[1]],
       });
     }
 
-    function createMarker(id, lat, lng, label, iconUrl) {
+    function createMarker(id, lat, lng, labelText, iconPath) {
       if (markers[id]) {
         map.removeLayer(markers[id]);
         map.removeLayer(tooltips[id]);
       }
 
       const marker = L.marker([lat, lng], {
-        icon: iconUrl ? createCustomIcon(iconUrl) : undefined
+        icon: createCustomIcon(iconPath)
       }).addTo(map);
 
       const tooltip = L.tooltip({
         permanent: true,
         direction: 'top',
-        offset: [0, -50],
-        className: 'custom-label'
-      }).setContent(label).setLatLng([lat, lng]);
+        className: 'custom-label',
+        offset: [0, -45]
+      })
+      .setContent(labelText)
+      .setLatLng([lat, lng]);
 
       map.addLayer(tooltip);
-
       markers[id] = marker;
       tooltips[id] = tooltip;
     }
