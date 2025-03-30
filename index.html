@@ -16,27 +16,36 @@
       top: 10px;
       left: 60px;
       background-color: rgba(0, 125, 120, 0.8);
-      padding: 10px;
+      padding: 10px 15px;
       border-radius: 8px;
       color: white;
       z-index: 1000;
+      width: 250px;
+    }
+    .controls div {
+      margin-bottom: 6px;
     }
     .controls input {
-      margin: 4px 0;
+      margin-top: 4px;
       padding: 6px;
       border-radius: 4px;
       border: none;
-      width: 220px;
+      width: 100%;
       font-size: 14px;
     }
+    .button-group {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+      gap: 8px;
+    }
     .controls button {
-      background-color: #003366;
-      color: white;
+      background-color: #f7c325; /* vàng BIDV */
+      color: #003366;
       border: none;
-      padding: 6px 12px;
-      margin-top: 8px;
-      margin-right: 5px;
+      padding: 6px 14px;
       border-radius: 4px;
+      font-weight: bold;
       cursor: pointer;
     }
     #map {
@@ -51,15 +60,17 @@
     <div><strong>TSSS1:</strong><br><input id="tsss1" value="10.791913, 106.670962" /></div>
     <div><strong>TSSS2:</strong><br><input id="tsss2" value="10.791909, 106.67442" /></div>
     <div><strong>TSSS3:</strong><br><input id="tsss3" value="10.791997, 106.671874" /></div>
-    <button onclick="updateMarkers()">Cập nhật</button>
-    <button onclick="takeScreenshot()">Chụp ảnh</button>
+    <div class="button-group">
+      <button onclick="updateMarkers()">Cập nhật</button>
+      <button onclick="takeScreenshot()">Chụp ảnh</button>
+    </div>
   </div>
 
   <div id="map"></div>
 
   <!-- Leaflet core -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- Screenshoter script (đã sửa link) -->
+  <!-- Screenshoter -->
   <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
 
   <script>
