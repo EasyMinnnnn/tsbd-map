@@ -4,58 +4,84 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bản đồ TSBĐ & TSSS - BIDV</title>
+
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://rawcdn.githack.com/Mapyst/leaflet-simple-map-screenshoter/v0.5.0/dist/leaflet-simple-map-screenshoter.css" />
+
   <style>
     body {
       margin: 0;
       background-color: #007d78;
       font-family: Arial, sans-serif;
+      position: relative;
     }
+
     .controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: #007d78;
       padding: 10px;
+      border-radius: 8px;
       color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      max-width: 300px;
     }
+
     .controls input {
-      margin: 2px;
+      margin: 2px 4px;
       padding: 4px;
       border-radius: 3px;
       border: none;
-      width: 90px;
+      width: 100px;
     }
+
     .controls button {
       background-color: #003366;
       color: white;
       border: none;
       padding: 6px 10px;
-      margin: 4px;
+      margin-top: 6px;
+      margin-right: 6px;
       border-radius: 3px;
       cursor: pointer;
     }
+
     #map {
-      width: 100%;
-      height: 80vh;
+      width: 100vw;
+      height: 100vh;
     }
   </style>
 </head>
 <body>
   <div class="controls">
-    TSBĐ: Lat <input id="lat_tsbd" value="10.7921658" />
-    Lng <input id="lng_tsbd" value="106.668698" /><br />
-    TSSS1: Lat <input id="lat_tsss1" value="10.791913" />
-    Lng <input id="lng_tsss1" value="106.670962" /><br />
-    TSSS2: Lat <input id="lat_tsss2" value="10.791909" />
-    Lng <input id="lng_tsss2" value="106.67442" /><br />
-    TSSS3: Lat <input id="lat_tsss3" value="10.791997" />
-    Lng <input id="lng_tsss3" value="106.671874" /><br />
+    <div>
+      <strong>TSBĐ:</strong> Lat <input id="lat_tsbd" value="10.7921658" />
+      Lng <input id="lng_tsbd" value="106.668698" />
+    </div>
+    <div>
+      <strong>TSSS1:</strong> Lat <input id="lat_tsss1" value="10.791913" />
+      Lng <input id="lng_tsss1" value="106.670962" />
+    </div>
+    <div>
+      <strong>TSSS2:</strong> Lat <input id="lat_tsss2" value="10.791909" />
+      Lng <input id="lng_tsss2" value="106.67442" />
+    </div>
+    <div>
+      <strong>TSSS3:</strong> Lat <input id="lat_tsss3" value="10.791997" />
+      Lng <input id="lng_tsss3" value="106.671874" />
+    </div>
     <button onclick="updateMarkers()">Cập nhật</button>
     <button onclick="takeScreenshot()">Chụp ảnh</button>
   </div>
 
   <div id="map"></div>
 
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://rawcdn.githack.com/Mapyst/leaflet-simple-map-screenshoter/v0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
+  <!-- Leaflet Image plugin -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-image/0.0.4/leaflet-image.min.js"></script>
 
   <script>
     const map = L.map('map').setView([10.7921658, 106.668698], 17);
@@ -65,21 +91,16 @@
 
     const markers = {};
 
-    const screenshoter = L.simpleMapScreenshoter({
-      screenName: 'ban_do_bidv.png',
-      hideElementsWithSelectors: ['.leaflet-control-container'],
-      preventDownload: true,
-      position: 'topright'
-    }).addTo(map);
-
     function createMarker(id, lat, lng, label, color) {
       if (markers[id]) {
         map.removeLayer(markers[id]);
       }
+
       const icon = L.divIcon({
         className: 'custom-icon',
-        html: `<div style="background:${color};color:white;padding:4px;border-radius:6px;font-size:12px">${label}</div>`
+        html: `<div style="background:${color};color:white;padding:4px 6px;border-radius:6px;font-size:12px">${label}</div>`
       });
+
       const marker = L.marker([lat, lng], { icon }).addTo(map);
       markers[id] = marker;
     }
@@ -109,28 +130,20 @@
     }
 
     function takeScreenshot() {
-      const mapDiv = document.getElementById('map');
-      const originalWidth = mapDiv.style.width;
-      const originalHeight = mapDiv.style.height;
+      leafletImage(map, function (err, canvas) {
+        if (err) {
+          alert('Không thể chụp bản đồ.');
+          console.error(err);
+          return;
+        }
 
-      mapDiv.style.width = '1800px';
-      mapDiv.style.height = '900px';
-      map.invalidateSize();
-
-      setTimeout(() => {
-        screenshoter.takeScreen('blob').then(blob => {
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = 'ban_do_bidv_rong.png';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-
-          mapDiv.style.width = originalWidth;
-          mapDiv.style.height = originalHeight;
-          map.invalidateSize();
-        });
-      }, 1000);
+        const link = document.createElement("a");
+        link.href = canvas.toDataURL("image/png");
+        link.download = "ban_do_tsbd_tsss.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
     }
 
     window.onload = updateMarkers;
