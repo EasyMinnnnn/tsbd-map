@@ -7,14 +7,8 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css" />
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    #map {
-      width: 100vw;
-      height: 100vh;
-    }
+    body { margin: 0; font-family: Arial, sans-serif; }
+    #map { width: 100vw; height: 100vh; }
     .controls {
       position: absolute;
       top: 10px;
@@ -52,25 +46,19 @@
       border-radius: 6px;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
     }
-    .custom-icon-img {
-      width: 40px;
-      height: 40px;
-      transform: translate(-50%, -100%);
-    }
   </style>
 </head>
 <body>
   <div class="controls">
-    <div><strong>TSBĐ:</strong><br><input id="tsbd" value="10.7921658, 106.668698" /></div>
-    <div><strong>TSSS1:</strong><br><input id="tsss1" value="10.791913, 106.670962" /></div>
-    <div><strong>TSSS2:</strong><br><input id="tsss2" value="10.791909, 106.67442" /></div>
-    <div><strong>TSSS3:</strong><br><input id="tsss3" value="10.791997, 106.671874" /></div>
+    <div><strong>TSBĐ:</strong><br><input id="tsbd" value="10.7921658, 106.668698"/></div>
+    <div><strong>TSSS1:</strong><br><input id="tsss1" value="10.791913, 106.670962"/></div>
+    <div><strong>TSSS2:</strong><br><input id="tsss2" value="10.791909, 106.67442"/></div>
+    <div><strong>TSSS3:</strong><br><input id="tsss3" value="10.791997, 106.671874"/></div>
     <div style="text-align: center">
       <button onclick="updateMarkers()">Cập nhật</button>
       <button onclick="takeScreenshot()">Chụp ảnh</button>
     </div>
   </div>
-
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -84,36 +72,41 @@
 
     const markers = {};
     const tooltips = {};
-
     const screenshoter = L.simpleMapScreenshoter({
       hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
       preventDownload: true,
       position: 'topright'
     }).addTo(map);
 
-    function createMarker(id, lat, lng, labelText, iconUrl) {
+    const iconTSBD = L.icon({
+      iconUrl: 'Bieu-Tuong-Logo-Ngan-Hang-BIDV.png',
+      iconSize: [36, 36],
+      iconAnchor: [18, 36]
+    });
+
+    const iconTSSS = L.icon({
+      iconUrl: 'pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png',
+      iconSize: [36, 36],
+      iconAnchor: [18, 36]
+    });
+
+    function createMarker(id, lat, lng, labelText, icon) {
       if (markers[id]) {
         map.removeLayer(markers[id]);
         map.removeLayer(tooltips[id]);
       }
 
-      const icon = L.divIcon({
-        className: '',
-        html: `<img class="custom-icon-img" src="${iconUrl}" alt="${labelText}">`
-      });
-
       const marker = L.marker([lat, lng], { icon }).addTo(map);
       const tooltip = L.tooltip({
         permanent: true,
-        direction: 'top',
-        offset: [0, -45],
+        direction: 'bottom',
+        offset: [0, 40],
         className: 'custom-label'
       })
       .setContent(labelText)
       .setLatLng([lat, lng]);
 
       map.addLayer(tooltip);
-
       markers[id] = marker;
       tooltips[id] = tooltip;
     }
@@ -124,10 +117,10 @@
       const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(x => parseFloat(x.trim()));
       const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(x => parseFloat(x.trim()));
 
-      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "./Bieu-Tuong-Logo-Ngan-Hang-BIDV.png");
-      createMarker("tsss1", lat1, lng1, "TSSS 1", "./pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
-      createMarker("tsss2", lat2, lng2, "TSSS 2", "./pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
-      createMarker("tsss3", lat3, lng3, "TSSS 3", "./pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
+      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", iconTSBD);
+      createMarker("tsss1", lat1, lng1, "TSSS 1", iconTSSS);
+      createMarker("tsss2", lat2, lng2, "TSSS 2", iconTSSS);
+      createMarker("tsss3", lat3, lng3, "TSSS 3", iconTSSS);
 
       const bounds = L.latLngBounds([
         [lat_tsbd, lng_tsbd],
