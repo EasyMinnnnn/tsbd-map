@@ -7,14 +7,8 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css" />
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    #map {
-      width: 100vw;
-      height: 100vh;
-    }
+    body { margin: 0; font-family: Arial, sans-serif; }
+    #map { width: 100vw; height: 100vh; }
     .controls {
       position: absolute;
       top: 10px;
@@ -43,42 +37,42 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    .leaflet-tooltip.custom-label {
+    .custom-label {
       background-color: #007d78;
       border: 2px solid #007d78;
       color: #f2c94c;
       font-weight: bold;
       padding: 6px 10px;
-      border-radius: 6px;
       font-size: 13px;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+      border-radius: 6px;
+      position: relative;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     }
-    .leaflet-tooltip::after {
+    .custom-label::after {
       content: "";
       position: absolute;
-      bottom: -10px;
+      bottom: -12px;
       left: 50%;
       transform: translateX(-50%);
       width: 0;
       height: 0;
       border-left: 8px solid transparent;
       border-right: 8px solid transparent;
-      border-top: 10px solid #007d78;
+      border-top: 12px solid #007d78;
     }
   </style>
 </head>
 <body>
   <div class="controls">
-    <div><strong>TSBĐ:</strong><br><input id="tsbd" value="10.7921658, 106.668698"/></div>
-    <div><strong>TSSS1:</strong><br><input id="tsss1" value="10.791913, 106.670962"/></div>
-    <div><strong>TSSS2:</strong><br><input id="tsss2" value="10.791909, 106.67442"/></div>
-    <div><strong>TSSS3:</strong><br><input id="tsss3" value="10.791997, 106.671874"/></div>
+    <div><strong>TSBĐ:</strong><br><input id="tsbd" value="10.7921658, 106.668698" /></div>
+    <div><strong>TSSS1:</strong><br><input id="tsss1" value="10.791913, 106.670962" /></div>
+    <div><strong>TSSS2:</strong><br><input id="tsss2" value="10.791909, 106.67442" /></div>
+    <div><strong>TSSS3:</strong><br><input id="tsss3" value="10.791997, 106.671874" /></div>
     <div style="text-align: center">
       <button onclick="updateMarkers()">Cập nhật</button>
       <button onclick="takeScreenshot()">Chụp ảnh</button>
     </div>
   </div>
-
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -91,7 +85,7 @@
     }).addTo(map);
 
     const markers = {};
-    const tooltips = {};
+    const labels = {};
 
     const screenshoter = L.simpleMapScreenshoter({
       hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
@@ -99,62 +93,47 @@
       position: 'topright'
     }).addTo(map);
 
-    function createCustomIcon(imgPath, size = [40, 40]) {
-      return L.icon({
-        iconUrl: imgPath,
-        iconSize: size,
-        iconAnchor: [size[0] / 2, size[1]],
-      });
-    }
+    function createMarker(id, lat, lng, labelText, iconUrl, iconSize) {
+      if (markers[id]) map.removeLayer(markers[id]);
+      if (labels[id]) map.removeLayer(labels[id]);
 
-    function createMarker(id, lat, lng, labelText, iconPath) {
-      if (markers[id]) {
-        map.removeLayer(markers[id]);
-        map.removeLayer(tooltips[id]);
-      }
+      const icon = L.icon({ iconUrl, iconSize });
+      const marker = L.marker([lat, lng], { icon }).addTo(map);
 
-      const marker = L.marker([lat, lng], {
-        icon: createCustomIcon(iconPath)
-      }).addTo(map);
-
-      const tooltip = L.tooltip({
-        permanent: true,
-        direction: 'top',
+      const label = L.divIcon({
         className: 'custom-label',
-        offset: [0, -45]
-      })
-      .setContent(labelText)
-      .setLatLng([lat, lng]);
+        html: `<div class='custom-label'>${labelText}</div>`,
+        iconAnchor: [iconSize[0]/2, iconSize[1] + 5]
+      });
 
-      map.addLayer(tooltip);
+      const labelMarker = L.marker([lat, lng], { icon: label, interactive: false }).addTo(map);
+
       markers[id] = marker;
-      tooltips[id] = tooltip;
+      labels[id] = labelMarker;
     }
 
     function updateMarkers() {
-      const [lat_tsbd, lng_tsbd] = document.getElementById("tsbd").value.split(',').map(x => parseFloat(x.trim()));
-      const [lat1, lng1] = document.getElementById("tsss1").value.split(',').map(x => parseFloat(x.trim()));
-      const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(x => parseFloat(x.trim()));
-      const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(x => parseFloat(x.trim()));
+      const [lat_tsbd, lng_tsbd] = document.getElementById("tsbd").value.split(',').map(Number);
+      const [lat1, lng1] = document.getElementById("tsss1").value.split(',').map(Number);
+      const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(Number);
+      const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(Number);
 
-      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png");
-      createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
-      createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
-      createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
+      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", [40, 40]);
+      createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png", [35, 35]);
+      createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png", [35, 35]);
+      createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png", [35, 35]);
 
-      const bounds = L.latLngBounds([
+      map.fitBounds([
         [lat_tsbd, lng_tsbd],
         [lat1, lng1],
         [lat2, lng2],
         [lat3, lng3],
       ]);
-      map.fitBounds(bounds);
     }
 
     function takeScreenshot() {
       const [lat, lng] = document.getElementById("tsbd").value.split(',').map(x => x.trim());
       const filename = `TSBD_${lat},${lng}.png`;
-
       setTimeout(() => {
         screenshoter.takeScreen('blob').then(blob => {
           const link = document.createElement('a');
