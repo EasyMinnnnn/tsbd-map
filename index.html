@@ -2,14 +2,18 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Bản đồ TSBĐ & TSSS - BIDV</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://rawcdn.githack.com/Mapyst/leaflet-simple-map-screenshoter/v0.5.0/dist/leaflet-simple-map-screenshoter.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css" />
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
+    }
+    #map {
+      width: 100vw;
+      height: 100vh;
     }
     .controls {
       position: absolute;
@@ -39,26 +43,24 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    #map {
-      width: 100vw;
-      height: 100vh;
-    }
-    .custom-label {
-      background-color: #dff0d8;
-      border: 2px solid #4caf50;
-      padding: 4px 8px;
-      border-radius: 6px;
+    .leaflet-tooltip.custom-label {
+      background-color: #f0fff0;
+      border: 2px solid green;
+      padding: 6px 10px;
+      font-size: 13px;
       font-weight: bold;
+      border-radius: 6px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
     }
   </style>
 </head>
 <body>
   <div class="controls">
-    <div><strong>TSBĐ:</strong><br><input id="tsbd" value="10.7921658, 106.668698" /></div>
-    <div><strong>TSSS1:</strong><br><input id="tsss1" value="10.791913, 106.670962" /></div>
-    <div><strong>TSSS2:</strong><br><input id="tsss2" value="10.791909, 106.67442" /></div>
-    <div><strong>TSSS3:</strong><br><input id="tsss3" value="10.791997, 106.671874" /></div>
-    <div style="text-align:center">
+    <div><strong>TSBĐ:</strong><br><input id="tsbd" value="10.7921658, 106.668698"/></div>
+    <div><strong>TSSS1:</strong><br><input id="tsss1" value="10.791913, 106.670962"/></div>
+    <div><strong>TSSS2:</strong><br><input id="tsss2" value="10.791909, 106.67442"/></div>
+    <div><strong>TSSS3:</strong><br><input id="tsss3" value="10.791997, 106.671874"/></div>
+    <div style="text-align: center">
       <button onclick="updateMarkers()">Cập nhật</button>
       <button onclick="takeScreenshot()">Chụp ảnh</button>
     </div>
@@ -67,7 +69,7 @@
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://rawcdn.githack.com/Mapyst/leaflet-simple-map-screenshoter/v0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
 
   <script>
     const map = L.map('map').setView([10.7921658, 106.668698], 17);
@@ -79,75 +81,74 @@
     const tooltips = {};
 
     const screenshoter = L.simpleMapScreenshoter({
-      hideElementsWithSelectors: ['.leaflet-control-container'],
+      hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
       preventDownload: true,
       position: 'topright'
     }).addTo(map);
 
-    // Custom icon for TSBĐ
+    // ICON BIDV cho TSBĐ
     const iconBIDV = L.icon({
       iconUrl: 'Bieu-Tuong-Logo-Ngan-Hang-BIDV.png',
-      iconSize: [36, 36],
-      iconAnchor: [18, 36]
+      iconSize: [40, 40],
+      iconAnchor: [20, 40]
     });
 
-    function createMarker(id, lat, lng, label) {
+    function createMarker(id, lat, lng, labelText) {
       if (markers[id]) {
         map.removeLayer(markers[id]);
         map.removeLayer(tooltips[id]);
       }
 
-      const icon = (id === 'tsbd') ? iconBIDV : undefined;
-      const marker = L.marker([lat, lng], { icon }).addTo(map);
+      const marker = L.marker([lat, lng], {
+        icon: id === 'tsbd' ? iconBIDV : undefined
+      }).addTo(map);
 
       const tooltip = L.tooltip({
         permanent: true,
         direction: 'right',
         className: 'custom-label'
-      }).setContent(label).setLatLng([lat, lng]);
+      }).setContent(labelText).setLatLng([lat, lng]);
 
       map.addLayer(tooltip);
+
       markers[id] = marker;
       tooltips[id] = tooltip;
     }
 
     function updateMarkers() {
-      try {
-        const [lat_tsbd, lng_tsbd] = document.getElementById("tsbd").value.split(',').map(x => parseFloat(x.trim()));
-        const [lat_tsss1, lng_tsss1] = document.getElementById("tsss1").value.split(',').map(x => parseFloat(x.trim()));
-        const [lat_tsss2, lng_tsss2] = document.getElementById("tsss2").value.split(',').map(x => parseFloat(x.trim()));
-        const [lat_tsss3, lng_tsss3] = document.getElementById("tsss3").value.split(',').map(x => parseFloat(x.trim()));
+      const [lat_tsbd, lng_tsbd] = document.getElementById("tsbd").value.split(',').map(x => parseFloat(x.trim()));
+      const [lat1, lng1] = document.getElementById("tsss1").value.split(',').map(x => parseFloat(x.trim()));
+      const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(x => parseFloat(x.trim()));
+      const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(x => parseFloat(x.trim()));
 
-        createMarker('tsbd', lat_tsbd, lng_tsbd, 'TSBĐ');
-        createMarker('tsss1', lat_tsss1, lng_tsss1, 'TSSS 1');
-        createMarker('tsss2', lat_tsss2, lng_tsss2, 'TSSS 2');
-        createMarker('tsss3', lat_tsss3, lng_tsss3, 'TSSS 3');
+      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ");
+      createMarker("tsss1", lat1, lng1, "TSSS 1");
+      createMarker("tsss2", lat2, lng2, "TSSS 2");
+      createMarker("tsss3", lat3, lng3, "TSSS 3");
 
-        map.fitBounds([
-          [lat_tsbd, lng_tsbd],
-          [lat_tsss1, lng_tsss1],
-          [lat_tsss2, lng_tsss2],
-          [lat_tsss3, lng_tsss3]
-        ]);
-      } catch (e) {
-        alert("Vui lòng nhập đúng định dạng tọa độ: lat, lng");
-      }
+      const bounds = L.latLngBounds([
+        [lat_tsbd, lng_tsbd],
+        [lat1, lng1],
+        [lat2, lng2],
+        [lat3, lng3],
+      ]);
+      map.fitBounds(bounds);
     }
 
     function takeScreenshot() {
-      const [lat_tsbd, lng_tsbd] = document.getElementById("tsbd").value.split(',').map(x => parseFloat(x.trim()));
-      const fileName = `TSBD_${lat_tsbd},${lng_tsbd}.png`;
+      const [lat, lng] = document.getElementById("tsbd").value.split(',').map(x => x.trim());
+      const filename = `TSBD_${lat},${lng}.png`;
 
       setTimeout(() => {
         screenshoter.takeScreen('blob').then(blob => {
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
-          link.download = fileName;
+          link.download = filename;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
         });
-      }, 1000);
+      }, 800); // chờ label hiển thị xong
     }
 
     window.onload = updateMarkers;
