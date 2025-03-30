@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Bản đồ TSBĐ & TSSS - BIDV</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css" />
@@ -43,27 +43,24 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    .leaflet-tooltip.speech-bubble {
-      background-color: #d4edc9;
+    .leaflet-tooltip.custom-label {
+      background-color: #f0fff0;
       border: 2px solid green;
-      border-radius: 6px;
-      padding: 8px 12px;
+      padding: 6px 10px;
       font-size: 13px;
       font-weight: bold;
+      border-radius: 6px;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-      position: relative;
-      transform: translateY(-40px);
     }
-    .leaflet-tooltip.speech-bubble::after {
+    .leaflet-tooltip.custom-label::after {
       content: "";
       position: absolute;
-      top: 100%;
+      bottom: -10px;
       left: 50%;
-      margin-left: -6px;
-      width: 0;
-      height: 0;
-      border: 14px solid transparent;
-      border-top-color: green;
+      transform: translateX(-50%);
+      border-width: 10px 10px 0;
+      border-style: solid;
+      border-color: green transparent transparent transparent;
     }
   </style>
 </head>
@@ -109,13 +106,13 @@
       const tooltip = L.tooltip({
         permanent: true,
         direction: 'top',
-        className: 'speech-bubble'
+        offset: [0, -40],
+        className: 'custom-label'
       })
       .setContent(labelText)
       .setLatLng([lat, lng]);
 
       map.addLayer(tooltip);
-
       markers[id] = marker;
       tooltips[id] = tooltip;
     }
