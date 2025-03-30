@@ -7,12 +7,10 @@
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-simple-map-screenshoter/dist/leaflet-simple-map-screenshoter.css" />
-
   <style>
     body {
       margin: 0;
-      background-color: #007d78;
+      background-color: #007d78; /* Màu BIDV */
       font-family: Arial, sans-serif;
     }
     .controls {
@@ -31,14 +29,13 @@
       color: white;
       border: none;
       padding: 6px 10px;
-      margin: 4px;
+      margin: 4px 2px;
       border-radius: 3px;
       cursor: pointer;
     }
     #map {
-      width: 100vw;
+      width: 100%;
       height: 80vh;
-      z-index: 0;
     }
   </style>
 </head>
@@ -58,20 +55,21 @@
 
   <div id="map"></div>
 
-  <!-- JS -->
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- SimpleMapScreenshoter Plugin -->
   <script src="https://unpkg.com/leaflet-simple-map-screenshoter"></script>
 
   <script>
+    // Khởi tạo bản đồ
     const map = L.map('map').setView([10.7921658, 106.668698], 17);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
+    // Thêm plugin chụp ảnh
     const screenshoter = L.simpleMapScreenshoter({
-      screenName: 'ban_do_bidv.png',
-      hidden: true
+      hidden: true, // không hiện nút trên UI
     }).addTo(map);
 
     const markers = {};
@@ -81,10 +79,11 @@
 
       const icon = L.divIcon({
         className: 'custom-icon',
-        html: `<div style="background:${color};color:white;padding:4px;border-radius:6px;">${label}</div>`
+        html: `<div style="background:${color};color:white;padding:4px 8px;border-radius:6px;font-size:12px">${label}</div>`
       });
 
-      markers[id] = L.marker([lat, lng], { icon }).addTo(map);
+      const marker = L.marker([lat, lng], { icon }).addTo(map);
+      markers[id] = marker;
     }
 
     function updateMarkers() {
@@ -112,20 +111,29 @@
     }
 
     function takeScreenshot() {
-      screenshoter.takeScreen('blob', {
-        width: 1600,  // Chiều rộng ảnh
-        height: 900   // Chiều cao ảnh
-      }).then(blob => {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'ban_do_bidv.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }).catch(err => {
-        alert("Chụp ảnh thất bại!");
-        console.error(err);
-      });
+      const mapDiv = document.getElementById('map');
+      const originalWidth = mapDiv.style.width;
+      const originalHeight = mapDiv.style.height;
+
+      mapDiv.style.width = '1600px';
+      mapDiv.style.height = '900px';
+      map.invalidateSize();
+
+      setTimeout(() => {
+        screenshoter.takeScreen('blob').then(blob => {
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'ban_do_bidv.png';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          // Khôi phục lại kích thước cũ
+          mapDiv.style.width = originalWidth;
+          mapDiv.style.height = originalHeight;
+          map.invalidateSize();
+        });
+      }, 500);
     }
 
     window.onload = updateMarkers;
