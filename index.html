@@ -73,6 +73,7 @@
       <button onclick="takeScreenshot()">Chụp ảnh</button>
     </div>
   </div>
+
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -100,13 +101,16 @@
       const icon = L.icon({ iconUrl, iconSize });
       const marker = L.marker([lat, lng], { icon }).addTo(map);
 
+      // Di chuyển label lên trên icon marker một chút
+      const labelLatLng = [lat + 0.00015, lng]; // điều chỉnh lên cao hơn một chút
+
       const label = L.divIcon({
-        className: 'custom-label',
+        className: '',
         html: `<div class='custom-label'>${labelText}</div>`,
-        iconAnchor: [iconSize[0]/2, iconSize[1] + 5]
+        iconAnchor: [0, 0]
       });
 
-      const labelMarker = L.marker([lat, lng], { icon: label, interactive: false }).addTo(map);
+      const labelMarker = L.marker(labelLatLng, { icon: label, interactive: false }).addTo(map);
 
       markers[id] = marker;
       labels[id] = labelMarker;
@@ -118,7 +122,7 @@
       const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(Number);
       const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(Number);
 
-      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", [40, 40]);
+      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", [50, 50]);
       createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png", [35, 35]);
       createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png", [35, 35]);
       createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png", [35, 35]);
