@@ -9,28 +9,27 @@
   <style>
     body {
       margin: 0;
-      background-color: #007d78;
       font-family: Arial, sans-serif;
     }
 
     .controls {
       position: absolute;
       top: 10px;
-      left: 10px;
-      background-color: #007d78;
+      left: 60px; /* Dời qua phải */
+      background-color: rgba(0, 125, 120, 0.85); /* màu xanh BIDV có độ trong suốt */
       padding: 10px;
       border-radius: 8px;
       color: white;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .controls input {
       margin: 4px 0;
-      padding: 4px;
-      border-radius: 3px;
+      padding: 6px;
+      border-radius: 4px;
       border: none;
-      width: 200px;
+      width: 220px;
       font-size: 14px;
     }
 
@@ -38,10 +37,10 @@
       background-color: #003366;
       color: white;
       border: none;
-      padding: 6px 10px;
-      margin-top: 6px;
-      margin-right: 4px;
-      border-radius: 3px;
+      padding: 6px 12px;
+      margin-top: 8px;
+      margin-right: 5px;
+      border-radius: 4px;
       cursor: pointer;
     }
 
@@ -52,6 +51,7 @@
   </style>
 </head>
 <body>
+
   <div class="controls">
     <div><strong>TSBĐ:</strong><br><input id="tsbd" value="10.7921658, 106.668698" /></div>
     <div><strong>TSSS1:</strong><br><input id="tsss1" value="10.791913, 106.670962" /></div>
