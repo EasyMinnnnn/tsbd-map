@@ -12,9 +12,22 @@
   <style>
     body, html { margin: 0; height: 100%; }
     #map { height: 80%; }
-    #form-container { padding: 10px; background: #f2f2f2; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-    input { margin: 5px; padding: 4px; }
-    button { padding: 6px 10px; cursor: pointer; }
+    #form-container {
+      padding: 10px;
+      background: #f2f2f2;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    input {
+      margin: 5px;
+      padding: 4px;
+    }
+    button {
+      padding: 6px 10px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -50,12 +63,14 @@
     if (markers[id]) map.removeLayer(markers[id]);
 
     var icon = L.AwesomeMarkers.icon({
-      icon: 'info-sign', markerColor: color, prefix: 'glyphicon'
+      icon: 'info-sign',
+      markerColor: color,
+      prefix: 'glyphicon'
     });
 
-    var popupContent = `<b>${label}</b>`;
     var marker = L.marker([lat, lng], { icon: icon })
-      .bindPopup(popupContent).addTo(map);
+      .bindPopup(label)
+      .addTo(map);
 
     markers[id] = marker;
   }
@@ -68,15 +83,21 @@
   }
 
   function takeScreenshot() {
-    html2canvas(document.querySelector("#map")).then(canvas => {
-      var link = document.createElement('a');
-      link.download = 'map-screenshot.png';
-      link.href = canvas.toDataURL();
-      link.click();
-    });
+    updateMarkers(); // đảm bảo có marker trước khi chụp
+    setTimeout(() => {
+      html2canvas(document.querySelector("#map")).then(canvas => {
+        var link = document.createElement('a');
+        link.download = 'map-screenshot.png';
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    }, 1000); // chờ vẽ xong
   }
 
-  updateMarkers();
+  // Tự động hiển thị khi mở trang
+  document.addEventListener('DOMContentLoaded', function () {
+    updateMarkers();
+  });
 </script>
 
 </body>
