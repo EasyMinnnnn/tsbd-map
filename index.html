@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bản đồ TSBĐ & TSSS - BIDV</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css" />
@@ -43,8 +43,6 @@
       border-radius: 4px;
       cursor: pointer;
     }
-
-    /* Tooltip with arrow */
     .leaflet-tooltip.speech-bubble {
       background-color: #d4edc9;
       border: 2px solid green;
@@ -54,17 +52,17 @@
       font-weight: bold;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
       position: relative;
+      transform: translateY(-40px);
     }
-
     .leaflet-tooltip.speech-bubble::after {
       content: "";
       position: absolute;
       top: 100%;
-      left: 20px;
+      left: 50%;
       margin-left: -6px;
       width: 0;
       height: 0;
-      border: 8px solid transparent;
+      border: 14px solid transparent;
       border-top-color: green;
     }
   </style>
@@ -155,7 +153,7 @@
           link.click();
           document.body.removeChild(link);
         });
-      }, 800); // delay đảm bảo label render kịp
+      }, 800);
     }
 
     window.onload = updateMarkers;
