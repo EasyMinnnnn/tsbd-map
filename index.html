@@ -15,7 +15,7 @@
       position: absolute;
       top: 10px;
       left: 60px;
-      background-color: rgba(0, 125, 120, 0.6);
+      background-color: rgba(0, 125, 120, 0.8);
       padding: 10px;
       border-radius: 8px;
       color: white;
@@ -30,9 +30,8 @@
       font-size: 14px;
     }
     .controls button {
-      background-color: #f7d359;
+      background-color: #f2c94c;
       color: black;
-      font-weight: bold;
       border: none;
       padding: 6px 12px;
       margin-top: 8px;
@@ -52,8 +51,10 @@
     <div><strong>TSSS1:</strong><br><input id="tsss1" value="10.791913, 106.670962" /></div>
     <div><strong>TSSS2:</strong><br><input id="tsss2" value="10.791909, 106.67442" /></div>
     <div><strong>TSSS3:</strong><br><input id="tsss3" value="10.791997, 106.671874" /></div>
-    <button onclick="updateMarkers()">Cập nhật</button>
-    <button onclick="takeScreenshot()">Chụp ảnh</button>
+    <div style="text-align:center">
+      <button onclick="updateMarkers()">Cập nhật</button>
+      <button onclick="takeScreenshot()">Chụp ảnh</button>
+    </div>
   </div>
 
   <div id="map"></div>
@@ -68,6 +69,7 @@
     }).addTo(map);
 
     const markers = {};
+    const tooltips = {};
 
     const screenshoter = L.simpleMapScreenshoter({
       hideElementsWithSelectors: ['.leaflet-control-container'],
@@ -75,19 +77,18 @@
       position: 'topright'
     }).addTo(map);
 
-    function createLabel(lat, lng, text) {
-      const label = L.divIcon({
-        className: 'custom-label',
-        html: `<div style="background: #ffffff; border: 2px solid #5cb85c; border-radius: 6px; padding: 6px; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); font-weight: bold;">${text}</div>`
-      });
-      return L.marker([lat, lng], { icon: label }).addTo(map);
-    }
-
     function createMarker(id, lat, lng, label, color) {
       if (markers[id]) {
         map.removeLayer(markers[id]);
+        map.removeLayer(tooltips[id]);
       }
-      markers[id] = createLabel(lat, lng, label);
+      const marker = L.marker([lat, lng]).addTo(map);
+      const tooltip = L.tooltip({ permanent: true, direction: 'right', className: 'custom-label' })
+        .setContent(label)
+        .setLatLng([lat, lng]);
+      map.addLayer(tooltip);
+      markers[id] = marker;
+      tooltips[id] = tooltip;
     }
 
     function updateMarkers() {
@@ -112,7 +113,7 @@
 
     function takeScreenshot() {
       const [lat_tsbd, lng_tsbd] = document.getElementById("tsbd").value.split(',').map(Number);
-      const fileName = `TSBD_${lat_tsbd},${lng_tsbd}`.replace(/\s/g, '') + '.png';
+      const fileName = `TSBD_${lat_tsbd},${lng_tsbd}.png`;
 
       setTimeout(() => {
         screenshoter.takeScreen('blob').then(blob => {
