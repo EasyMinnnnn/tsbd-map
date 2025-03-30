@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Bản đồ TSBĐ và TSSS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.js"></script>
+    <style>
+        body, html { margin: 0; height: 100%; }
+        #map { height: 80%; }
+        #form-container { padding: 10px; background: #f2f2f2; }
+        input { margin: 5px; }
+    </style>
+</head>
+<body>
+<div id="form-container">
+    <label>TSBĐ: Lat <input type="text" id="tsbd_lat" value="10.7921658" />
+           Lng <input type="text" id="tsbd_lng" value="106.668698" /></label>
+    <label>TSSS1: Lat <input type="text" id="tsss1_lat" value="10.791913" />
+           Lng <input type="text" id="tsss1_lng" value="106.670962" /></label>
+    <label>TSSS2: Lat <input type="text" id="tsss2_lat" value="10.791909" />
+           Lng <input type="text" id="tsss2_lng" value="106.67442" /></label>
+    <label>TSSS3: Lat <input type="text" id="tsss3_lat" value="10.791997" />
+           Lng <input type="text" id="tsss3_lng" value="106.671874" /></label>
+    <button onclick="updateMarkers()">Cập nhật</button>
+</div>
+<div id="map"></div>
+
+<script>
+    var map = L.map('map').setView([10.791997, 106.671874], 17);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    var markers = {};
+
+    function createMarker(id, lat, lng, label) {
+        if (markers[id]) map.removeLayer(markers[id]);
+        var marker = L.marker([lat, lng]).bindPopup(label).addTo(map);
+        markers[id] = marker;
+    }
+
+    function updateMarkers() {
+        createMarker('tsbd', parseFloat(tsbd_lat.value), parseFloat(tsbd_lng.value), 'TSBĐ');
+        createMarker('tsss1', parseFloat(tsss1_lat.value), parseFloat(tsss1_lng.value), 'TSSS 1');
+        createMarker('tsss2', parseFloat(tsss2_lat.value), parseFloat(tsss2_lng.value), 'TSSS 2');
+        createMarker('tsss3', parseFloat(tsss3_lat.value), parseFloat(tsss3_lng.value), 'TSSS 3');
+    }
+
+    updateMarkers();
+</script>
+</body>
+</html>
