@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bản đồ TSBĐ & TSSS - BIDV</title>
 
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-simple-map-screenshoter/dist/leaflet-simple-map-screenshoter.css" />
   <style>
     body {
       margin: 0;
@@ -51,34 +50,33 @@
     TSSS3: Lat <input id="lat_tsss3" value="10.791997" />
     Lng <input id="lng_tsss3" value="106.671874" /><br />
     <button onclick="updateMarkers()">Cập nhật</button>
-    <button onclick="takeScreenshot()">Chụp ảnh</button>
+    <button onclick="screenshot()">Chụp ảnh</button>
   </div>
 
   <div id="map"></div>
 
-  <!-- Leaflet JS -->
+  <!-- Leaflet & plugin -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- Leaflet Image plugin -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-image/0.0.4/leaflet-image.min.js"></script>
+  <script src="https://unpkg.com/leaflet-simple-map-screenshoter"></script>
 
   <script>
     const map = L.map('map').setView([10.7921658, 106.668698], 17);
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
+      attribution: '&copy; OpenStreetMap contributors',
     }).addTo(map);
 
     const markers = {};
 
     function createMarker(id, lat, lng, label, color) {
-      if (markers[id]) {
-        map.removeLayer(markers[id]);
-      }
+      if (markers[id]) map.removeLayer(markers[id]);
+
       const icon = L.divIcon({
         className: 'custom-icon',
-        html: `<div style="background:${color};color:white;padding:4px;border-radius:6px;font-size:12px">${label}</div>`
+        html: `<div style="background:${color};color:white;padding:4px;border-radius:6px;">${label}</div>`
       });
-      const marker = L.marker([lat, lng], { icon }).addTo(map);
-      markers[id] = marker;
+
+      markers[id] = L.marker([lat, lng], { icon }).addTo(map);
     }
 
     function updateMarkers() {
@@ -100,22 +98,22 @@
         [lat_tsbd, lng_tsbd],
         [lat_tsss1, lng_tsss1],
         [lat_tsss2, lng_tsss2],
-        [lat_tsss3, lng_tsss3]
+        [lat_tsss3, lng_tsss3],
       ]);
       map.fitBounds(bounds);
     }
 
-    function takeScreenshot() {
-      window.scrollTo(0, 0); // tránh bị crop
-      leafletImage(map, function(err, canvas) {
-        if (err) {
-          alert('Không thể chụp bản đồ.');
-          console.error(err);
-          return;
-        }
-        const link = document.createElement("a");
-        link.href = canvas.toDataURL("image/png");
-        link.download = "ban_do_tsbd_tsss.png";
+    // Plugin screenshot
+    const screenshoter = L.simpleMapScreenshoter({
+      screenName: 'map_bidv_tsbd_tsss.png',
+      hidden: true,
+    }).addTo(map);
+
+    function screenshot() {
+      screenshoter.takeScreen('blob').then(blob => {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'ban_do_bidv.png';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
