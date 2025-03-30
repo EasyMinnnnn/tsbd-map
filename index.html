@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bản đồ TSBĐ & TSSS - BIDV</title>
 
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-simple-map-screenshoter/dist/leaflet-simple-map-screenshoter.css" />
+
   <style>
     body {
       margin: 0;
@@ -36,6 +38,7 @@
     #map {
       width: 100%;
       height: 80vh;
+      z-index: 0;
     }
   </style>
 </head>
@@ -50,20 +53,27 @@
     TSSS3: Lat <input id="lat_tsss3" value="10.791997" />
     Lng <input id="lng_tsss3" value="106.671874" /><br />
     <button onclick="updateMarkers()">Cập nhật</button>
-    <button onclick="screenshot()">Chụp ảnh</button>
+    <button onclick="takeScreenshot()">Chụp ảnh</button>
   </div>
 
   <div id="map"></div>
 
-  <!-- Leaflet & plugin -->
+  <!-- JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-simple-map-screenshoter"></script>
 
   <script>
+    // Khởi tạo bản đồ
     const map = L.map('map').setView([10.7921658, 106.668698], 17);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Plugin chụp ảnh
+    const screenshoter = L.simpleMapScreenshoter({
+      screenName: 'ban_do_bidv.png',
+      hidden: true
     }).addTo(map);
 
     const markers = {};
@@ -98,18 +108,12 @@
         [lat_tsbd, lng_tsbd],
         [lat_tsss1, lng_tsss1],
         [lat_tsss2, lng_tsss2],
-        [lat_tsss3, lng_tsss3],
+        [lat_tsss3, lng_tsss3]
       ]);
       map.fitBounds(bounds);
     }
 
-    // Plugin screenshot
-    const screenshoter = L.simpleMapScreenshoter({
-      screenName: 'map_bidv_tsbd_tsss.png',
-      hidden: true,
-    }).addTo(map);
-
-    function screenshot() {
+    function takeScreenshot() {
       screenshoter.takeScreen('blob').then(blob => {
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
@@ -117,8 +121,17 @@
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+      }).catch(err => {
+        alert("Chụp ảnh thất bại!");
+        console.error(err);
       });
     }
+
+    window.onload = updateMarkers;
+  </script>
+</body>
+</html>
+
 
     window.onload = updateMarkers;
   </script>
