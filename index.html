@@ -13,7 +13,7 @@
     body, html { margin: 0; height: 100%; }
     #map { height: 80%; }
     #form-container { padding: 10px; background: #f2f2f2; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-    input, textarea { margin: 5px; padding: 4px; }
+    input { margin: 5px; padding: 4px; }
     button { padding: 6px 10px; cursor: pointer; }
   </style>
 </head>
@@ -22,19 +22,15 @@
 <div id="form-container">
   <label>TSBĐ: Lat <input type="text" id="tsbd_lat" value="10.7921658" size="8" />
          Lng <input type="text" id="tsbd_lng" value="106.668698" size="8" /></label>
-  <textarea id="tsbd_note" placeholder="Ghi chú TSBĐ" rows="1" cols="20"></textarea>
 
   <label>TSSS1: Lat <input type="text" id="tsss1_lat" value="10.791913" size="8" />
          Lng <input type="text" id="tsss1_lng" value="106.670962" size="8" /></label>
-  <textarea id="tsss1_note" placeholder="Ghi chú TSSS1" rows="1" cols="20"></textarea>
 
   <label>TSSS2: Lat <input type="text" id="tsss2_lat" value="10.791909" size="8" />
          Lng <input type="text" id="tsss2_lng" value="106.67442" size="8" /></label>
-  <textarea id="tsss2_note" placeholder="Ghi chú TSSS2" rows="1" cols="20"></textarea>
 
   <label>TSSS3: Lat <input type="text" id="tsss3_lat" value="10.791997" size="8" />
          Lng <input type="text" id="tsss3_lng" value="106.671874" size="8" /></label>
-  <textarea id="tsss3_note" placeholder="Ghi chú TSSS3" rows="1" cols="20"></textarea>
 
   <button onclick="updateMarkers()">Cập nhật</button>
   <button onclick="takeScreenshot()">Chụp ảnh bản đồ</button>
@@ -50,14 +46,14 @@
 
   var markers = {};
 
-  function createMarker(id, lat, lng, label, color, note) {
+  function createMarker(id, lat, lng, label, color) {
     if (markers[id]) map.removeLayer(markers[id]);
 
     var icon = L.AwesomeMarkers.icon({
       icon: 'info-sign', markerColor: color, prefix: 'glyphicon'
     });
 
-    var popupContent = `<b>${label}</b><br>${note}`;
+    var popupContent = `<b>${label}</b>`;
     var marker = L.marker([lat, lng], { icon: icon })
       .bindPopup(popupContent).addTo(map);
 
@@ -65,10 +61,10 @@
   }
 
   function updateMarkers() {
-    createMarker('tsbd', parseFloat(tsbd_lat.value), parseFloat(tsbd_lng.value), 'TSBĐ', 'red', tsbd_note.value);
-    createMarker('tsss1', parseFloat(tsss1_lat.value), parseFloat(tsss1_lng.value), 'TSSS 1', 'green', tsss1_note.value);
-    createMarker('tsss2', parseFloat(tsss2_lat.value), parseFloat(tsss2_lng.value), 'TSSS 2', 'green', tsss2_note.value);
-    createMarker('tsss3', parseFloat(tsss3_lat.value), parseFloat(tsss3_lng.value), 'TSSS 3', 'green', tsss3_note.value);
+    createMarker('tsbd', parseFloat(tsbd_lat.value), parseFloat(tsbd_lng.value), 'TSBĐ', 'red');
+    createMarker('tsss1', parseFloat(tsss1_lat.value), parseFloat(tsss1_lng.value), 'TSSS 1', 'green');
+    createMarker('tsss2', parseFloat(tsss2_lat.value), parseFloat(tsss2_lng.value), 'TSSS 2', 'green');
+    createMarker('tsss3', parseFloat(tsss3_lat.value), parseFloat(tsss3_lng.value), 'TSSS 3', 'green');
   }
 
   function takeScreenshot() {
@@ -85,4 +81,3 @@
 
 </body>
 </html>
-
