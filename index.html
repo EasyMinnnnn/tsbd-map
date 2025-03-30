@@ -43,14 +43,29 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    .leaflet-tooltip.custom-label {
-      background-color: #f0fff0;
+
+    /* Tooltip with arrow */
+    .leaflet-tooltip.speech-bubble {
+      background-color: #d4edc9;
       border: 2px solid green;
-      padding: 6px 10px;
+      border-radius: 6px;
+      padding: 8px 12px;
       font-size: 13px;
       font-weight: bold;
-      border-radius: 6px;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+      position: relative;
+    }
+
+    .leaflet-tooltip.speech-bubble::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 20px;
+      margin-left: -6px;
+      width: 0;
+      height: 0;
+      border: 8px solid transparent;
+      border-top-color: green;
     }
   </style>
 </head>
@@ -86,28 +101,20 @@
       position: 'topright'
     }).addTo(map);
 
-    // ICON BIDV cho TSBĐ
-    const iconBIDV = L.icon({
-      iconUrl: 'Bieu-Tuong-Logo-Ngan-Hang-BIDV.png',
-      iconSize: [40, 40],
-      iconAnchor: [20, 40]
-    });
-
     function createMarker(id, lat, lng, labelText) {
       if (markers[id]) {
         map.removeLayer(markers[id]);
         map.removeLayer(tooltips[id]);
       }
 
-      const marker = L.marker([lat, lng], {
-        icon: id === 'tsbd' ? iconBIDV : undefined
-      }).addTo(map);
-
+      const marker = L.marker([lat, lng]).addTo(map);
       const tooltip = L.tooltip({
         permanent: true,
-        direction: 'right',
-        className: 'custom-label'
-      }).setContent(labelText).setLatLng([lat, lng]);
+        direction: 'top',
+        className: 'speech-bubble'
+      })
+      .setContent(labelText)
+      .setLatLng([lat, lng]);
 
       map.addLayer(tooltip);
 
@@ -148,7 +155,7 @@
           link.click();
           document.body.removeChild(link);
         });
-      }, 800); // chờ label hiển thị xong
+      }, 800); // delay đảm bảo label render kịp
     }
 
     window.onload = updateMarkers;
