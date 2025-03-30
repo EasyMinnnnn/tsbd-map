@@ -9,6 +9,7 @@
   <style>
     body { margin: 0; font-family: Arial, sans-serif; }
     #map { width: 100vw; height: 100vh; }
+
     .controls {
       position: absolute;
       top: 10px;
@@ -19,6 +20,7 @@
       color: white;
       z-index: 1000;
     }
+
     .controls input {
       margin: 4px 0;
       padding: 6px;
@@ -27,6 +29,7 @@
       width: 220px;
       font-size: 14px;
     }
+
     .controls button {
       background-color: #f2c94c;
       color: black;
@@ -37,7 +40,9 @@
       border-radius: 4px;
       cursor: pointer;
     }
+
     .custom-label {
+      display: inline-block;
       background-color: #007d78;
       border: 2px solid #007d78;
       color: #f2c94c;
@@ -47,7 +52,9 @@
       border-radius: 6px;
       position: relative;
       box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+      white-space: nowrap;
     }
+
     .custom-label::after {
       content: "";
       position: absolute;
@@ -101,17 +108,13 @@
       const icon = L.icon({ iconUrl, iconSize });
       const marker = L.marker([lat, lng], { icon }).addTo(map);
 
-      // Dịch label lên một chút
-      const labelOffsetLat = 0.00025;
-      const labelLatLng = [lat + labelOffsetLat, lng];
-
       const label = L.divIcon({
-        className: '',
+        className: 'custom-label',
         html: `<div class='custom-label'>${labelText}</div>`,
-        iconAnchor: [0, 0]
+        iconAnchor: [iconSize[0]/2, iconSize[1] + 6]  // vị trí phía trên logo
       });
 
-      const labelMarker = L.marker(labelLatLng, { icon: label, interactive: false }).addTo(map);
+      const labelMarker = L.marker([lat, lng], { icon: label, interactive: false }).addTo(map);
 
       markers[id] = marker;
       labels[id] = labelMarker;
@@ -123,7 +126,7 @@
       const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(Number);
       const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(Number);
 
-      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", [50, 50]);
+      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", [40, 40]);
       createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png", [35, 35]);
       createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png", [35, 35]);
       createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png", [35, 35]);
