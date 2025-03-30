@@ -1,127 +1,183 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <title>Bản đồ TSBĐ & TSSS - BIDV</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Leaflet & AwesomeMarkers -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.css" />
-  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.min.js"></script>
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bản đồ Leaflet - TSBĐ & TSSS</title>
+  <!-- Leaflet CSS -->
+  <link 
+    rel="stylesheet" 
+    href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" 
+    integrity="sha512-XodZBNTC5n17Xt2m7uCO7bYW7xy86R1iMsgDZQ98arNPsw86L6o5N3o7P9F653uj6bKZ6+rbclxAKeetZi+5wQ==" 
+    crossorigin="" 
+  />
   <style>
-    body, html {
+    body {
       margin: 0;
-      height: 100%;
+      background-color: #007d78; /* nền xanh ngọc lục bảo */
+      color: #fff;
       font-family: Arial, sans-serif;
     }
-    #map {
-      height: 80%;
-    }
-    #form-container {
+    .controls {
       padding: 10px;
-      background: #007d78; /* màu xanh ngọc BIDV */
-      color: white;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
+    }
+    .controls div {
+      margin-bottom: 5px;
+    }
+    .controls label {
+      margin-right: 8px;
+      font-weight: 600;
+    }
+    .controls input[type="number"] {
+      padding: 3px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      width: 100px;
+    }
+    .controls button {
+      background-color: #003366; /* nút màu đậm */
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      margin-right: 10px;
+      border-radius: 3px;
+      cursor: pointer;
       font-size: 14px;
     }
-    label {
-      display: flex;
-      align-items: center;
-      gap: 4px;
+    .controls button:hover {
+      opacity: 0.9;
     }
-    input {
-      padding: 5px;
-      border-radius: 4px;
-      border: none;
+    #map {
+      width: 100%;
+      height: 500px;
     }
-    button {
-      background: #003366;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #005c99;
+    /* Đảm bảo bản đồ hiển thị tốt trên màn hình nhỏ */
+    @media (max-width: 600px) {
+      #map {
+        height: 400px;
+      }
+      .controls label, .controls button {
+        display: block;
+        margin-bottom: 5px;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="controls">
+    <div>
+      TSBĐ: 
+      <label>Lat <input id="lat_tsbd" type="number" step="any" value="21.03"></label>
+      <label>Lng <input id="lng_tsbd" type="number" step="any" value="105.85"></label>
+    </div>
+    <div>
+      TSSS1: 
+      <label>Lat <input id="lat_tsss1" type="number" step="any" value="21.035"></label>
+      <label>Lng <input id="lng_tsss1" type="number" step="any" value="105.84"></label>
+    </div>
+    <div>
+      TSSS2: 
+      <label>Lat <input id="lat_tsss2" type="number" step="any" value="21.025"></label>
+      <label>Lng <input id="lng_tsss2" type="number" step="any" value="105.845"></label>
+    </div>
+    <div>
+      TSSS3: 
+      <label>Lat <input id="lat_tsss3" type="number" step="any" value="21.03"></label>
+      <label>Lng <input id="lng_tsss3" type="number" step="any" value="105.855"></label>
+    </div>
+    <button id="updateBtn">Cập nhật</button>
+    <button id="snapshotBtn">Chụp ảnh</button>
+  </div>
 
-<div id="form-container">
-  <label>TSBĐ: Lat <input type="text" id="tsbd_lat" value="10.7921658" size="8" />
-         Lng <input type="text" id="tsbd_lng" value="106.668698" size="8" /></label>
+  <div id="map"></div>
 
-  <label>TSSS1: Lat <input type="text" id="tsss1_lat" value="10.791913" size="8" />
-         Lng <input type="text" id="tsss1_lng" value="106.670962" size="8" /></label>
+  <!-- Leaflet JS -->
+  <script 
+    src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" 
+    integrity="sha512-XwE8v27gmaI6KwhV+2XdK7Q0lRDqjtbd4acvj7Z6VNtJcZt7H9h8HmKxjXw+rz+wF3RjqkGkb6YglzLEnb6tHw==" 
+    crossorigin="">
+  </script>
+  <!-- Leaflet Image plugin (for snapshot) -->
+  <script src="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-image/v0.0.4/leaflet-image.js"></script>
 
-  <label>TSSS2: Lat <input type="text" id="tsss2_lat" value="10.791909" size="8" />
-         Lng <input type="text" id="tsss2_lng" value="106.67442" size="8" /></label>
+  <script>
+    // Khởi tạo bản đồ Leaflet
+    var map = L.map('map', { preferCanvas: true });
 
-  <label>TSSS3: Lat <input type="text" id="tsss3_lat" value="10.791997" size="8" />
-         Lng <input type="text" id="tsss3_lng" value="106.671874" size="8" /></label>
+    // Thêm layer bản đồ (sử dụng nền CartoDB Voyager)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20,
+      detectRetina: true
+    }).addTo(map);
 
-  <button onclick="updateMarkers()">Cập nhật</button>
-  <button onclick="takeScreenshot()">Chụp ảnh</button>
-</div>
+    // Tạo các marker (dùng circleMarker để tương thích snapshot và hiệu suất)
+    var markerOptions = {
+      radius: 8,
+      fillColor: 'red',
+      color: '#fff',    // viền trắng cho dễ nhìn
+      weight: 2,
+      fillOpacity: 1
+    };
+    var markerTSBD  = L.circleMarker([21.03, 105.85], markerOptions).addTo(map);
+    var markerTSSS1 = L.circleMarker([21.035, 105.84], markerOptions).addTo(map);
+    var markerTSSS2 = L.circleMarker([21.025, 105.845], markerOptions).addTo(map);
+    var markerTSSS3 = L.circleMarker([21.03, 105.855], markerOptions).addTo(map);
 
-<div id="map"></div>
+    // Đặt khung nhìn bản đồ bao trùm tất cả các marker
+    var allPoints = [
+      [21.03, 105.85],
+      [21.035, 105.84],
+      [21.025, 105.845],
+      [21.03, 105.855]
+    ];
+    map.fitBounds(allPoints);
 
-<script>
-  const map = L.map('map').setView([10.791997, 106.671874], 17);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
+    // Xử lý nút "Cập nhật" để cập nhật lại vị trí marker theo tọa độ mới nhập
+    document.getElementById('updateBtn').onclick = function() {
+      var lat_tsbd  = parseFloat(document.getElementById('lat_tsbd').value);
+      var lng_tsbd  = parseFloat(document.getElementById('lng_tsbd').value);
+      var lat_tsss1 = parseFloat(document.getElementById('lat_tsss1').value);
+      var lng_tsss1 = parseFloat(document.getElementById('lng_tsss1').value);
+      var lat_tsss2 = parseFloat(document.getElementById('lat_tsss2').value);
+      var lng_tsss2 = parseFloat(document.getElementById('lng_tsss2').value);
+      var lat_tsss3 = parseFloat(document.getElementById('lat_tsss3').value);
+      var lng_tsss3 = parseFloat(document.getElementById('lng_tsss3').value);
 
-  const markers = {};
+      // Cập nhật vị trí cho từng marker
+      markerTSBD.setLatLng([lat_tsbd, lng_tsbd]);
+      markerTSSS1.setLatLng([lat_tsss1, lng_tsss1]);
+      markerTSSS2.setLatLng([lat_tsss2, lng_tsss2]);
+      markerTSSS3.setLatLng([lat_tsss3, lng_tsss3]);
 
-  function createMarker(id, lat, lng, label, color) {
-    if (markers[id]) map.removeLayer(markers[id]);
+      // Điều chỉnh lại khung nhìn bản đồ cho vừa tất cả các marker mới
+      var newPoints = [
+        [lat_tsbd, lng_tsbd],
+        [lat_tsss1, lng_tsss1],
+        [lat_tsss2, lng_tsss2],
+        [lat_tsss3, lng_tsss3]
+      ];
+      map.fitBounds(newPoints);
+    };
 
-    const icon = L.AwesomeMarkers.icon({
-      icon: 'info-sign',
-      markerColor: color,
-      prefix: 'glyphicon'
-    });
-
-    const marker = L.marker([lat, lng], { icon: icon })
-      .bindPopup(label)
-      .addTo(map);
-
-    markers[id] = marker;
-  }
-
-  function updateMarkers() {
-    createMarker('tsbd', parseFloat(document.getElementById('tsbd_lat').value), parseFloat(document.getElementById('tsbd_lng').value), 'TSBĐ', 'red');
-    createMarker('tsss1', parseFloat(document.getElementById('tsss1_lat').value), parseFloat(document.getElementById('tsss1_lng').value), 'TSSS 1', 'green');
-    createMarker('tsss2', parseFloat(document.getElementById('tsss2_lat').value), parseFloat(document.getElementById('tsss2_lng').value), 'TSSS 2', 'green');
-    createMarker('tsss3', parseFloat(document.getElementById('tsss3_lat').value), parseFloat(document.getElementById('tsss3_lng').value), 'TSSS 3', 'green');
-  }
-
-  function takeScreenshot() {
-    updateMarkers();
-    setTimeout(() => {
-      html2canvas(document.querySelector("#map")).then(canvas => {
-        const link = document.createElement('a');
-        link.download = 'map-screenshot.png';
-        link.href = canvas.toDataURL();
-        link.click();
+    // Xử lý nút "Chụp ảnh" để tạo ảnh PNG từ bản đồ và tải xuống
+    document.getElementById('snapshotBtn').onclick = function() {
+      leafletImage(map, function(err, canvas) {
+        if (err) {
+          console.error('Lỗi khi tạo ảnh bản đồ:', err);
+          return;
+        }
+        // Tạo đường dẫn tải ảnh từ canvas và tự động click tải xuống
+        var imgData = canvas.toDataURL();
+        var a = document.createElement('a');
+        a.href = imgData;
+        a.download = 'map.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
       });
-    }, 1000);
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    updateMarkers();
-  });
-</script>
-
+    };
+  </script>
 </body>
 </html>
