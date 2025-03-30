@@ -2,10 +2,10 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Bản đồ TSBĐ và TSSS</title>
+  <title>Bản đồ TSBĐ & TSSS - BIDV</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Leaflet + AwesomeMarkers -->
+  <!-- Leaflet & AwesomeMarkers -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.css" />
   <script src="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.js"></script>
@@ -13,18 +13,45 @@
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
   <style>
-    body, html { margin: 0; height: 100%; }
-    #map { height: 80%; }
+    body, html {
+      margin: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+    }
+    #map {
+      height: 80%;
+    }
     #form-container {
       padding: 10px;
-      background: #f2f2f2;
+      background: #003366;
+      color: white;
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       align-items: center;
+      font-size: 14px;
     }
-    input { margin: 5px; padding: 4px; }
-    button { padding: 6px 10px; cursor: pointer; }
+    label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    input {
+      padding: 5px;
+      border-radius: 4px;
+      border: none;
+    }
+    button {
+      background: #0077b3;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #005c99;
+    }
   </style>
 </head>
 <body>
@@ -43,7 +70,7 @@
          Lng <input type="text" id="tsss3_lng" value="106.671874" size="8" /></label>
 
   <button onclick="updateMarkers()">Cập nhật</button>
-  <button onclick="takeScreenshot()">Chụp ảnh bản đồ</button>
+  <button onclick="takeScreenshot()">Chụp ảnh</button>
 </div>
 
 <div id="map"></div>
@@ -73,10 +100,10 @@
   }
 
   function updateMarkers() {
-    createMarker('tsbd', parseFloat(tsbd_lat.value), parseFloat(tsbd_lng.value), 'TSBĐ', 'red');
-    createMarker('tsss1', parseFloat(tsss1_lat.value), parseFloat(tsss1_lng.value), 'TSSS 1', 'green');
-    createMarker('tsss2', parseFloat(tsss2_lat.value), parseFloat(tsss2_lng.value), 'TSSS 2', 'green');
-    createMarker('tsss3', parseFloat(tsss3_lat.value), parseFloat(tsss3_lng.value), 'TSSS 3', 'green');
+    createMarker('tsbd', parseFloat(document.getElementById('tsbd_lat').value), parseFloat(document.getElementById('tsbd_lng').value), 'TSBĐ', 'red');
+    createMarker('tsss1', parseFloat(document.getElementById('tsss1_lat').value), parseFloat(document.getElementById('tsss1_lng').value), 'TSSS 1', 'green');
+    createMarker('tsss2', parseFloat(document.getElementById('tsss2_lat').value), parseFloat(document.getElementById('tsss2_lng').value), 'TSSS 2', 'green');
+    createMarker('tsss3', parseFloat(document.getElementById('tsss3_lat').value), parseFloat(document.getElementById('tsss3_lng').value), 'TSSS 3', 'green');
   }
 
   function takeScreenshot() {
@@ -91,7 +118,6 @@
     }, 1000);
   }
 
-  // Auto-update markers when page loads
   document.addEventListener("DOMContentLoaded", function () {
     updateMarkers();
   });
