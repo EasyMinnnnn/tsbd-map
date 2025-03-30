@@ -2,13 +2,24 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Bản đồ TSBĐ & TSSS - BIDV</title>
+
+  <!-- Leaflet & Screenshot -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css" />
+
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; }
-    #map { width: 100vw; height: 100vh; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    #map {
+      width: 100vw;
+      height: 100vh;
+    }
+
     .controls {
       position: absolute;
       top: 10px;
@@ -19,6 +30,7 @@
       color: white;
       z-index: 1000;
     }
+
     .controls input {
       margin: 4px 0;
       padding: 6px;
@@ -27,6 +39,7 @@
       width: 220px;
       font-size: 14px;
     }
+
     .controls button {
       background-color: #f2c94c;
       color: black;
@@ -37,14 +50,29 @@
       border-radius: 4px;
       cursor: pointer;
     }
+
     .leaflet-tooltip.custom-label {
-      background-color: #f0fff0;
-      border: 2px solid green;
-      padding: 6px 10px;
-      font-size: 13px;
+      background-color: white;
+      border: 2px solid #007d78;
+      padding: 6px 12px;
+      font-size: 14px;
       font-weight: bold;
       border-radius: 6px;
+      color: #f2c94c;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+      position: relative;
+    }
+
+    .leaflet-tooltip.custom-label::after {
+      content: "";
+      position: absolute;
+      bottom: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border: 14px solid transparent;
+      border-top: 14px solid #007d78;
     }
   </style>
 </head>
@@ -59,8 +87,10 @@
       <button onclick="takeScreenshot()">Chụp ảnh</button>
     </div>
   </div>
+
   <div id="map"></div>
 
+  <!-- JS Libraries -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
 
@@ -72,41 +102,40 @@
 
     const markers = {};
     const tooltips = {};
+
     const screenshoter = L.simpleMapScreenshoter({
       hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
       preventDownload: true,
       position: 'topright'
     }).addTo(map);
 
-    const iconTSBD = L.icon({
-      iconUrl: 'Bieu-Tuong-Logo-Ngan-Hang-BIDV.png',
-      iconSize: [36, 36],
-      iconAnchor: [18, 36]
-    });
+    function createCustomIcon(iconUrl, size = [38, 38]) {
+      return L.icon({
+        iconUrl,
+        iconSize: size,
+        iconAnchor: [size[0] / 2, size[1]], // bottom center
+      });
+    }
 
-    const iconTSSS = L.icon({
-      iconUrl: 'pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png',
-      iconSize: [36, 36],
-      iconAnchor: [18, 36]
-    });
-
-    function createMarker(id, lat, lng, labelText, icon) {
+    function createMarker(id, lat, lng, label, iconUrl) {
       if (markers[id]) {
         map.removeLayer(markers[id]);
         map.removeLayer(tooltips[id]);
       }
 
-      const marker = L.marker([lat, lng], { icon }).addTo(map);
+      const marker = L.marker([lat, lng], {
+        icon: iconUrl ? createCustomIcon(iconUrl) : undefined
+      }).addTo(map);
+
       const tooltip = L.tooltip({
         permanent: true,
-        direction: 'bottom',
-        offset: [0, 40],
+        direction: 'top',
+        offset: [0, -50],
         className: 'custom-label'
-      })
-      .setContent(labelText)
-      .setLatLng([lat, lng]);
+      }).setContent(label).setLatLng([lat, lng]);
 
       map.addLayer(tooltip);
+
       markers[id] = marker;
       tooltips[id] = tooltip;
     }
@@ -117,10 +146,10 @@
       const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(x => parseFloat(x.trim()));
       const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(x => parseFloat(x.trim()));
 
-      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", iconTSBD);
-      createMarker("tsss1", lat1, lng1, "TSSS 1", iconTSSS);
-      createMarker("tsss2", lat2, lng2, "TSSS 2", iconTSSS);
-      createMarker("tsss3", lat3, lng3, "TSSS 3", iconTSSS);
+      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png");
+      createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
+      createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
+      createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
 
       const bounds = L.latLngBounds([
         [lat_tsbd, lng_tsbd],
