@@ -36,7 +36,7 @@
       cursor: pointer;
     }
     #map {
-      width: 100%;
+      width: 100vw;
       height: 80vh;
       z-index: 0;
     }
@@ -63,14 +63,12 @@
   <script src="https://unpkg.com/leaflet-simple-map-screenshoter"></script>
 
   <script>
-    // Khởi tạo bản đồ
     const map = L.map('map').setView([10.7921658, 106.668698], 17);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Plugin chụp ảnh
     const screenshoter = L.simpleMapScreenshoter({
       screenName: 'ban_do_bidv.png',
       hidden: true
@@ -114,7 +112,10 @@
     }
 
     function takeScreenshot() {
-      screenshoter.takeScreen('blob').then(blob => {
+      screenshoter.takeScreen('blob', {
+        width: 1600,  // Chiều rộng ảnh
+        height: 900   // Chiều cao ảnh
+      }).then(blob => {
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = 'ban_do_bidv.png';
@@ -126,12 +127,6 @@
         console.error(err);
       });
     }
-
-    window.onload = updateMarkers;
-  </script>
-</body>
-</html>
-
 
     window.onload = updateMarkers;
   </script>
