@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bản đồ TSBĐ & TSSS - BIDV</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css" />
@@ -52,16 +52,6 @@
       border-radius: 6px;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
     }
-    .leaflet-tooltip.custom-label::after {
-      content: "";
-      position: absolute;
-      bottom: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      border-width: 10px 10px 0;
-      border-style: solid;
-      border-color: green transparent transparent transparent;
-    }
   </style>
 </head>
 <body>
@@ -90,6 +80,12 @@
     const markers = {};
     const tooltips = {};
 
+    const bidvIcon = L.icon({
+      iconUrl: 'Bieu-Tuong-Logo-Ngan-Hang-BIDV.png',
+      iconSize: [40, 40],
+      iconAnchor: [20, 40]
+    });
+
     const screenshoter = L.simpleMapScreenshoter({
       hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
       preventDownload: true,
@@ -102,17 +98,21 @@
         map.removeLayer(tooltips[id]);
       }
 
-      const marker = L.marker([lat, lng]).addTo(map);
+      const marker = L.marker([lat, lng], {
+        icon: id === 'tsbd' ? bidvIcon : undefined
+      }).addTo(map);
+
       const tooltip = L.tooltip({
         permanent: true,
         direction: 'top',
-        offset: [0, -40],
-        className: 'custom-label'
+        className: 'custom-label',
+        offset: [0, -45]
       })
       .setContent(labelText)
       .setLatLng([lat, lng]);
 
       map.addLayer(tooltip);
+
       markers[id] = marker;
       tooltips[id] = tooltip;
     }
