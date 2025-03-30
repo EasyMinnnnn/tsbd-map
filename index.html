@@ -101,8 +101,9 @@
       const icon = L.icon({ iconUrl, iconSize });
       const marker = L.marker([lat, lng], { icon }).addTo(map);
 
-      // Di chuyển label lên trên icon marker một chút
-      const labelLatLng = [lat + 0.00015, lng]; // điều chỉnh lên cao hơn một chút
+      // Dịch label lên một chút
+      const labelOffsetLat = 0.00025;
+      const labelLatLng = [lat + labelOffsetLat, lng];
 
       const label = L.divIcon({
         className: '',
