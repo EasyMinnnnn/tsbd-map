@@ -40,7 +40,7 @@
       gap: 8px;
     }
     .controls button {
-      background-color: #f9d85e; /* vàng nhạt hơn */
+      background-color: #f9d85e;
       color: #003366;
       border: none;
       padding: 6px 14px;
@@ -80,7 +80,6 @@
     const markers = {};
 
     const screenshoter = L.simpleMapScreenshoter({
-      screenName: 'ban_do_bidv.png',
       hideElementsWithSelectors: ['.leaflet-control-container'],
       preventDownload: true,
       position: 'topright'
@@ -123,6 +122,9 @@
       const originalWidth = mapDiv.style.width;
       const originalHeight = mapDiv.style.height;
 
+      const tsbdValue = document.getElementById("tsbd").value.trim().replace(/\s+/g, '');
+      const fileName = `TSBD_${tsbdValue}.png`;
+
       mapDiv.style.width = '1800px';
       mapDiv.style.height = '900px';
       map.invalidateSize();
@@ -131,7 +133,7 @@
         screenshoter.takeScreen('blob').then(blob => {
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
-          link.download = 'ban_do_bidv_rong.png';
+          link.download = fileName;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
