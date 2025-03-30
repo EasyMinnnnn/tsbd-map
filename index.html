@@ -4,13 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bản đồ TSBĐ & TSSS - BIDV</title>
-
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://rawcdn.githack.com/Mapyst/leaflet-simple-map-screenshoter/v0.5.0/dist/leaflet-simple-map-screenshoter.css" />
   <style>
     body {
       margin: 0;
-      background-color: #007d78; /* Màu BIDV */
+      background-color: #007d78;
       font-family: Arial, sans-serif;
     }
     .controls {
@@ -29,7 +28,7 @@
       color: white;
       border: none;
       padding: 6px 10px;
-      margin: 4px 2px;
+      margin: 4px;
       border-radius: 3px;
       cursor: pointer;
     }
@@ -55,33 +54,32 @@
 
   <div id="map"></div>
 
-  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- SimpleMapScreenshoter Plugin -->
-  <script src="https://unpkg.com/leaflet-simple-map-screenshoter"></script>
+  <script src="https://rawcdn.githack.com/Mapyst/leaflet-simple-map-screenshoter/v0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
 
   <script>
-    // Khởi tạo bản đồ
     const map = L.map('map').setView([10.7921658, 106.668698], 17);
-    const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    // Thêm plugin chụp ảnh
-    const screenshoter = L.simpleMapScreenshoter({
-      hidden: true, // không hiện nút trên UI
     }).addTo(map);
 
     const markers = {};
 
-    function createMarker(id, lat, lng, label, color) {
-      if (markers[id]) map.removeLayer(markers[id]);
+    const screenshoter = L.simpleMapScreenshoter({
+      screenName: 'ban_do_bidv.png',
+      hideElementsWithSelectors: ['.leaflet-control-container'],
+      preventDownload: true,
+      position: 'topright'
+    }).addTo(map);
 
+    function createMarker(id, lat, lng, label, color) {
+      if (markers[id]) {
+        map.removeLayer(markers[id]);
+      }
       const icon = L.divIcon({
         className: 'custom-icon',
-        html: `<div style="background:${color};color:white;padding:4px 8px;border-radius:6px;font-size:12px">${label}</div>`
+        html: `<div style="background:${color};color:white;padding:4px;border-radius:6px;font-size:12px">${label}</div>`
       });
-
       const marker = L.marker([lat, lng], { icon }).addTo(map);
       markers[id] = marker;
     }
@@ -115,7 +113,7 @@
       const originalWidth = mapDiv.style.width;
       const originalHeight = mapDiv.style.height;
 
-      mapDiv.style.width = '1600px';
+      mapDiv.style.width = '1800px';
       mapDiv.style.height = '900px';
       map.invalidateSize();
 
@@ -123,17 +121,16 @@
         screenshoter.takeScreen('blob').then(blob => {
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
-          link.download = 'ban_do_bidv.png';
+          link.download = 'ban_do_bidv_rong.png';
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
 
-          // Khôi phục lại kích thước cũ
           mapDiv.style.width = originalWidth;
           mapDiv.style.height = originalHeight;
           map.invalidateSize();
         });
-      }, 500);
+      }, 1000);
     }
 
     window.onload = updateMarkers;
