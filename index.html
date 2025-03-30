@@ -3,181 +3,120 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bản đồ Leaflet - TSBĐ & TSSS</title>
+  <title>Bản đồ TSBĐ & TSSS - BIDV</title>
+
   <!-- Leaflet CSS -->
-  <link 
-    rel="stylesheet" 
-    href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" 
-    integrity="sha512-XodZBNTC5n17Xt2m7uCO7bYW7xy86R1iMsgDZQ98arNPsw86L6o5N3o7P9F653uj6bKZ6+rbclxAKeetZi+5wQ==" 
-    crossorigin="" 
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
   <style>
     body {
       margin: 0;
-      background-color: #007d78; /* nền xanh ngọc lục bảo */
-      color: #fff;
+      background-color: #007d78;
       font-family: Arial, sans-serif;
     }
     .controls {
       padding: 10px;
+      color: white;
     }
-    .controls div {
-      margin-bottom: 5px;
-    }
-    .controls label {
-      margin-right: 8px;
-      font-weight: 600;
-    }
-    .controls input[type="number"] {
-      padding: 3px;
-      border: 1px solid #ccc;
+    .controls input {
+      margin: 2px;
+      padding: 4px;
       border-radius: 3px;
-      width: 100px;
+      border: none;
+      width: 90px;
     }
     .controls button {
-      background-color: #003366; /* nút màu đậm */
-      color: #fff;
+      background-color: #003366;
+      color: white;
       border: none;
-      padding: 6px 12px;
-      margin-right: 10px;
+      padding: 6px 10px;
+      margin: 4px;
       border-radius: 3px;
       cursor: pointer;
-      font-size: 14px;
-    }
-    .controls button:hover {
-      opacity: 0.9;
     }
     #map {
       width: 100%;
-      height: 500px;
-    }
-    /* Đảm bảo bản đồ hiển thị tốt trên màn hình nhỏ */
-    @media (max-width: 600px) {
-      #map {
-        height: 400px;
-      }
-      .controls label, .controls button {
-        display: block;
-        margin-bottom: 5px;
-      }
+      height: 80vh;
     }
   </style>
 </head>
 <body>
   <div class="controls">
-    <div>
-      TSBĐ: 
-      <label>Lat <input id="lat_tsbd" type="number" step="any" value="21.03"></label>
-      <label>Lng <input id="lng_tsbd" type="number" step="any" value="105.85"></label>
-    </div>
-    <div>
-      TSSS1: 
-      <label>Lat <input id="lat_tsss1" type="number" step="any" value="21.035"></label>
-      <label>Lng <input id="lng_tsss1" type="number" step="any" value="105.84"></label>
-    </div>
-    <div>
-      TSSS2: 
-      <label>Lat <input id="lat_tsss2" type="number" step="any" value="21.025"></label>
-      <label>Lng <input id="lng_tsss2" type="number" step="any" value="105.845"></label>
-    </div>
-    <div>
-      TSSS3: 
-      <label>Lat <input id="lat_tsss3" type="number" step="any" value="21.03"></label>
-      <label>Lng <input id="lng_tsss3" type="number" step="any" value="105.855"></label>
-    </div>
-    <button id="updateBtn">Cập nhật</button>
-    <button id="snapshotBtn">Chụp ảnh</button>
+    TSBĐ: Lat <input id="lat_tsbd" value="10.7921658" />
+    Lng <input id="lng_tsbd" value="106.668698" /><br />
+    TSSS1: Lat <input id="lat_tsss1" value="10.791913" />
+    Lng <input id="lng_tsss1" value="106.670962" /><br />
+    TSSS2: Lat <input id="lat_tsss2" value="10.791909" />
+    Lng <input id="lng_tsss2" value="106.67442" /><br />
+    TSSS3: Lat <input id="lat_tsss3" value="10.791997" />
+    Lng <input id="lng_tsss3" value="106.671874" /><br />
+    <button onclick="updateMarkers()">Cập nhật</button>
+    <button onclick="takeScreenshot()">Chụp ảnh</button>
   </div>
 
   <div id="map"></div>
 
   <!-- Leaflet JS -->
-  <script 
-    src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" 
-    integrity="sha512-XwE8v27gmaI6KwhV+2XdK7Q0lRDqjtbd4acvj7Z6VNtJcZt7H9h8HmKxjXw+rz+wF3RjqkGkb6YglzLEnb6tHw==" 
-    crossorigin="">
-  </script>
-  <!-- Leaflet Image plugin (for snapshot) -->
-  <script src="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-image/v0.0.4/leaflet-image.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
   <script>
-    // Khởi tạo bản đồ Leaflet
-    var map = L.map('map', { preferCanvas: true });
-
-    // Thêm layer bản đồ (sử dụng nền CartoDB Voyager)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd',
-      maxZoom: 20,
-      detectRetina: true
+    const map = L.map('map').setView([10.7921658, 106.668698], 17);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Tạo các marker (dùng circleMarker để tương thích snapshot và hiệu suất)
-    var markerOptions = {
-      radius: 8,
-      fillColor: 'red',
-      color: '#fff',    // viền trắng cho dễ nhìn
-      weight: 2,
-      fillOpacity: 1
-    };
-    var markerTSBD  = L.circleMarker([21.03, 105.85], markerOptions).addTo(map);
-    var markerTSSS1 = L.circleMarker([21.035, 105.84], markerOptions).addTo(map);
-    var markerTSSS2 = L.circleMarker([21.025, 105.845], markerOptions).addTo(map);
-    var markerTSSS3 = L.circleMarker([21.03, 105.855], markerOptions).addTo(map);
+    const markers = {};
 
-    // Đặt khung nhìn bản đồ bao trùm tất cả các marker
-    var allPoints = [
-      [21.03, 105.85],
-      [21.035, 105.84],
-      [21.025, 105.845],
-      [21.03, 105.855]
-    ];
-    map.fitBounds(allPoints);
+    function createMarker(id, lat, lng, label, color) {
+      if (markers[id]) {
+        map.removeLayer(markers[id]);
+      }
 
-    // Xử lý nút "Cập nhật" để cập nhật lại vị trí marker theo tọa độ mới nhập
-    document.getElementById('updateBtn').onclick = function() {
-      var lat_tsbd  = parseFloat(document.getElementById('lat_tsbd').value);
-      var lng_tsbd  = parseFloat(document.getElementById('lng_tsbd').value);
-      var lat_tsss1 = parseFloat(document.getElementById('lat_tsss1').value);
-      var lng_tsss1 = parseFloat(document.getElementById('lng_tsss1').value);
-      var lat_tsss2 = parseFloat(document.getElementById('lat_tsss2').value);
-      var lng_tsss2 = parseFloat(document.getElementById('lng_tsss2').value);
-      var lat_tsss3 = parseFloat(document.getElementById('lat_tsss3').value);
-      var lng_tsss3 = parseFloat(document.getElementById('lng_tsss3').value);
+      const icon = L.divIcon({
+        className: 'custom-icon',
+        html: `<div style="background:${color};color:white;padding:4px;border-radius:6px;">${label}</div>`
+      });
 
-      // Cập nhật vị trí cho từng marker
-      markerTSBD.setLatLng([lat_tsbd, lng_tsbd]);
-      markerTSSS1.setLatLng([lat_tsss1, lng_tsss1]);
-      markerTSSS2.setLatLng([lat_tsss2, lng_tsss2]);
-      markerTSSS3.setLatLng([lat_tsss3, lng_tsss3]);
+      const marker = L.marker([lat, lng], { icon }).addTo(map);
+      markers[id] = marker;
+    }
 
-      // Điều chỉnh lại khung nhìn bản đồ cho vừa tất cả các marker mới
-      var newPoints = [
+    function updateMarkers() {
+      const lat_tsbd = parseFloat(document.getElementById("lat_tsbd").value);
+      const lng_tsbd = parseFloat(document.getElementById("lng_tsbd").value);
+      const lat_tsss1 = parseFloat(document.getElementById("lat_tsss1").value);
+      const lng_tsss1 = parseFloat(document.getElementById("lng_tsss1").value);
+      const lat_tsss2 = parseFloat(document.getElementById("lat_tsss2").value);
+      const lng_tsss2 = parseFloat(document.getElementById("lng_tsss2").value);
+      const lat_tsss3 = parseFloat(document.getElementById("lat_tsss3").value);
+      const lng_tsss3 = parseFloat(document.getElementById("lng_tsss3").value);
+
+      createMarker('tsbd', lat_tsbd, lng_tsbd, 'TSBĐ', 'red');
+      createMarker('tsss1', lat_tsss1, lng_tsss1, 'TSSS1', 'green');
+      createMarker('tsss2', lat_tsss2, lng_tsss2, 'TSSS2', 'green');
+      createMarker('tsss3', lat_tsss3, lng_tsss3, 'TSSS3', 'green');
+
+      const bounds = L.latLngBounds([
         [lat_tsbd, lng_tsbd],
         [lat_tsss1, lng_tsss1],
         [lat_tsss2, lng_tsss2],
         [lat_tsss3, lng_tsss3]
-      ];
-      map.fitBounds(newPoints);
-    };
+      ]);
+      map.fitBounds(bounds);
+    }
 
-    // Xử lý nút "Chụp ảnh" để tạo ảnh PNG từ bản đồ và tải xuống
-    document.getElementById('snapshotBtn').onclick = function() {
-      leafletImage(map, function(err, canvas) {
-        if (err) {
-          console.error('Lỗi khi tạo ảnh bản đồ:', err);
-          return;
-        }
-        // Tạo đường dẫn tải ảnh từ canvas và tự động click tải xuống
-        var imgData = canvas.toDataURL();
-        var a = document.createElement('a');
-        a.href = imgData;
-        a.download = 'map.png';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+    function takeScreenshot() {
+      html2canvas(document.querySelector("#map")).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "map.png";
+        link.href = canvas.toDataURL();
+        link.click();
       });
-    };
+    }
+
+    // Hiển thị mặc định các marker khi tải trang
+    window.onload = updateMarkers;
   </script>
 </body>
 </html>
