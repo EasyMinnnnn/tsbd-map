@@ -41,31 +41,47 @@
       cursor: pointer;
     }
 
-    .custom-label {
-      display: inline-block;
+    .label-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .label-box {
       background-color: #007d78;
-      border: 2px solid #007d78;
       color: #f2c94c;
       font-weight: bold;
       padding: 6px 10px;
       font-size: 13px;
       border-radius: 6px;
-      position: relative;
+      border: 2px solid #007d78;
       white-space: nowrap;
       box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+      position: relative;
     }
 
-    .custom-label::after {
+    .label-box::after {
       content: "";
       position: absolute;
-      bottom: -12px;
+      bottom: -10px;
       left: 50%;
       transform: translateX(-50%);
       width: 0;
       height: 0;
       border-left: 8px solid transparent;
       border-right: 8px solid transparent;
-      border-top: 12px solid #007d78;
+      border-top: 10px solid #007d78;
+    }
+
+    .label-img {
+      width: 35px;
+      height: 35px;
+      margin-top: 4px;
+    }
+
+    .tsbd-img {
+      width: 40px;
+      height: 40px;
     }
   </style>
 </head>
@@ -100,24 +116,26 @@
       position: 'topright'
     }).addTo(map);
 
-    function createMarker(id, lat, lng, labelText, iconUrl, iconSize) {
+    function createMarker(id, lat, lng, labelText, imageUrl, isTSBD = false) {
       if (markers[id]) {
-        map.removeLayer(markers[id].marker);
-        map.removeLayer(markers[id].label);
+        map.removeLayer(markers[id]);
       }
 
-      const icon = L.icon({ iconUrl, iconSize });
-      const marker = L.marker([lat, lng], { icon }).addTo(map);
+      const iconHtml = `
+        <div class="label-icon">
+          <div class="label-box">${labelText}</div>
+          <img src="${imageUrl}" class="${isTSBD ? 'tsbd-img' : 'label-img'}" />
+        </div>
+      `;
 
-      const label = L.divIcon({
-        className: 'custom-label',
-        html: `<div class='custom-label'>${labelText}</div>`,
-        iconAnchor: [iconSize[0] / 2, iconSize[1] + 5]
+      const icon = L.divIcon({
+        className: "",
+        html: iconHtml,
+        iconAnchor: [20, 50]
       });
 
-      const labelMarker = L.marker([lat, lng], { icon: label, interactive: false }).addTo(map);
-
-      markers[id] = { marker, label: labelMarker };
+      const marker = L.marker([lat, lng], { icon }).addTo(map);
+      markers[id] = marker;
     }
 
     function updateMarkers() {
@@ -126,10 +144,10 @@
       const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(Number);
       const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(Number);
 
-      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", [40, 40]);
-      createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png", [35, 35]);
-      createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png", [35, 35]);
-      createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png", [35, 35]);
+      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", true);
+      createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
+      createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
+      createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
 
       map.fitBounds([
         [lat_tsbd, lng_tsbd],
