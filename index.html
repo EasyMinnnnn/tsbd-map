@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bản đồ TSBĐ & TSSS - BIDV</title>
 
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     body {
@@ -15,8 +16,8 @@
     .controls {
       position: absolute;
       top: 10px;
-      left: 60px; /* Dời qua phải */
-      background-color: rgba(0, 125, 120, 0.85); /* màu xanh BIDV có độ trong suốt */
+      left: 60px;
+      background-color: rgba(0, 125, 120, 0.85);
       padding: 10px;
       border-radius: 8px;
       color: white;
@@ -58,12 +59,12 @@
     <div><strong>TSSS2:</strong><br><input id="tsss2" value="10.791909, 106.67442" /></div>
     <div><strong>TSSS3:</strong><br><input id="tsss3" value="10.791997, 106.671874" /></div>
     <button onclick="updateMarkers()">Cập nhật</button>
-    <button onclick="takeScreenshot()">Chụp ảnh</button>
+    <button onclick="captureMap()">Chụp ảnh</button>
   </div>
 
   <div id="map"></div>
 
-  <!-- Leaflet & Image Plugin -->
+  <!-- Leaflet JS + Plugin -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-image/0.0.4/leaflet-image.min.js"></script>
 
@@ -108,15 +109,16 @@
       map.fitBounds(bounds);
     }
 
-    function takeScreenshot() {
+    function captureMap() {
       leafletImage(map, function (err, canvas) {
-        if (err) {
-          alert("Không thể chụp ảnh.");
-          console.error(err);
+        if (err || !canvas) {
+          alert("Không thể chụp bản đồ.");
           return;
         }
+
+        const image = canvas.toDataURL("image/png");
         const link = document.createElement("a");
-        link.href = canvas.toDataURL("image/png");
+        link.href = image;
         link.download = "ban_do_tsbd_tsss.png";
         document.body.appendChild(link);
         link.click();
