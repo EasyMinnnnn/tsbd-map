@@ -51,8 +51,8 @@
       font-size: 13px;
       border-radius: 6px;
       position: relative;
-      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
       white-space: nowrap;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     }
 
     .custom-label::after {
@@ -93,7 +93,6 @@
     }).addTo(map);
 
     const markers = {};
-    const labels = {};
 
     const screenshoter = L.simpleMapScreenshoter({
       hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
@@ -102,8 +101,10 @@
     }).addTo(map);
 
     function createMarker(id, lat, lng, labelText, iconUrl, iconSize) {
-      if (markers[id]) map.removeLayer(markers[id]);
-      if (labels[id]) map.removeLayer(labels[id]);
+      if (markers[id]) {
+        map.removeLayer(markers[id].marker);
+        map.removeLayer(markers[id].label);
+      }
 
       const icon = L.icon({ iconUrl, iconSize });
       const marker = L.marker([lat, lng], { icon }).addTo(map);
@@ -111,13 +112,12 @@
       const label = L.divIcon({
         className: 'custom-label',
         html: `<div class='custom-label'>${labelText}</div>`,
-        iconAnchor: [iconSize[0]/2, iconSize[1] + 6]  // vị trí phía trên logo
+        iconAnchor: [iconSize[0] / 2, iconSize[1] + 5]
       });
 
       const labelMarker = L.marker([lat, lng], { icon: label, interactive: false }).addTo(map);
 
-      markers[id] = marker;
-      labels[id] = labelMarker;
+      markers[id] = { marker, label: labelMarker };
     }
 
     function updateMarkers() {
