@@ -59,7 +59,7 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Leaflet Image plugin -->
-  <script src="https://rawcdn.githack.com/mapbox/leaflet-image/gh-pages/leaflet-image.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-image/0.0.4/leaflet-image.min.js"></script>
 
   <script>
     const map = L.map('map').setView([10.7921658, 106.668698], 17);
@@ -106,14 +106,16 @@
     }
 
     function takeScreenshot() {
+      window.scrollTo(0, 0); // tránh bị crop
       leafletImage(map, function(err, canvas) {
         if (err) {
-          console.error('Lỗi khi chụp bản đồ:', err);
+          alert('Không thể chụp bản đồ.');
+          console.error(err);
           return;
         }
         const link = document.createElement("a");
-        link.href = canvas.toDataURL();
-        link.download = "map.png";
+        link.href = canvas.toDataURL("image/png");
+        link.download = "ban_do_tsbd_tsss.png";
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
