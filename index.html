@@ -6,6 +6,10 @@
   <title>Bản đồ TSBĐ & TSSS - BIDV</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.1/dist/leaflet.markercluster.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.1/dist/leaflet.markercluster.js"></script>
   <style>
     body { margin: 0; font-family: Arial, sans-serif; }
     #map { width: 100vw; height: 100vh; }
@@ -99,16 +103,13 @@
 
   <div id="map"></div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
-
   <script>
     const map = L.map('map').setView([10.7921658, 106.668698], 17);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    const markers = {};
+    const markersLayer = L.markerClusterGroup(); // Khởi tạo nhóm cluster
 
     const screenshoter = L.simpleMapScreenshoter({
       hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
@@ -134,7 +135,7 @@
         iconAnchor: [20, 50]
       });
 
-      const marker = L.marker([lat, lng], { icon }).addTo(map);
+      const marker = L.marker([lat, lng], { icon }).addTo(markersLayer); // Thêm vào nhóm cluster
       markers[id] = marker;
     }
 
@@ -149,12 +150,9 @@
       createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
       createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
 
-      map.fitBounds([
-        [lat_tsbd, lng_tsbd],
-        [lat1, lng1],
-        [lat2, lng2],
-        [lat3, lng3],
-      ]);
+      map.addLayer(markersLayer); // Thêm nhóm marker vào bản đồ
+
+      map.fitBounds(markersLayer.getBounds()); // Điều chỉnh bản đồ để chứa tất cả các marker
     }
 
     function takeScreenshot() {
