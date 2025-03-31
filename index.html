@@ -86,9 +86,10 @@
       height: 40px;
     }
 
-    /* Style for draggable labels */
+    /* Để label có thể xoay */
     .draggable-label {
       cursor: move;
+      transform-origin: center;
     }
   </style>
 </head>
@@ -128,8 +129,8 @@
       }
 
       const iconHtml = `
-        <div class="label-icon draggable-label" draggable="true" ondragstart="startDrag(event, '${id}')">
-          <div class="label-box" id="label-box-${id}">${labelText}</div>
+        <div class="label-icon draggable-label" id="label-${id}" onmousedown="startDrag(event, '${id}')">
+          <div class="label-box">${labelText}</div>
           <img src="${imageUrl}" class="${isTSBD ? 'tsbd-img' : 'label-img'}" />
         </div>
       `;
@@ -140,25 +141,42 @@
         iconAnchor: [20, 50]
       });
 
-      const marker = L.marker([lat, lng], { icon }).addTo(map);
+      const marker = L.marker([lat, lng], { icon, draggable: false }).addTo(map); // Markers không thể di chuyển, chỉ label
       markers[id] = marker;
       return marker;
     }
 
+    // Bắt đầu kéo label
     function startDrag(event, id) {
-      event.dataTransfer.setData("text", id);
+      const label = document.getElementById(`label-${id}`);
+      label.classList.add('dragging');
+      label.setAttribute('draggable', true);
+      label.addEventListener('drag', function(e) {
+        updateLabelPosition(id, e.clientX, e.clientY);
+      });
+
+      label.addEventListener('dragend', function() {
+        label.classList.remove('dragging');
+        label.removeAttribute('draggable');
+      });
     }
 
-    function dropMarker(event) {
-      event.preventDefault();
-      const id = event.dataTransfer.getData("text");
-      const newLatLng = map.mouseEventToLatLng(event.originalEvent);
-      markers[id].setLatLng(newLatLng);
+    // Cập nhật vị trí của label khi kéo
+    function updateLabelPosition(id, x, y) {
+      const label = document.getElementById(`label-${id}`);
+      label.style.position = 'absolute';
+      label.style.left = `${x}px`;
+      label.style.top = `${y}px`;
     }
 
-    function rotateLabel(id, angle) {
-      const label = document.getElementById(`label-box-${id}`);
-      label.style.transform = `rotate(${angle}deg)`;
+    // Xoay label khi giữ chuột phải
+    let rotationAngle = 0;
+    function rotateLabel(event, id) {
+      if (event.button === 2) { // Chuột phải
+        rotationAngle += 15;
+        const label = document.getElementById(`label-${id}`);
+        label.style.transform = `rotate(${rotationAngle}deg)`;
+      }
     }
 
     function updateMarkers() {
@@ -167,7 +185,6 @@
       const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(Number);
       const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(Number);
 
-      // Kiểm tra tọa độ hợp lệ
       if (
         isNaN(lat_tsbd) || isNaN(lng_tsbd) ||
         isNaN(lat1) || isNaN(lng1) ||
