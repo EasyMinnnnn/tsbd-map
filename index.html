@@ -120,6 +120,7 @@
 
     let isDragging = false; // Biến để kiểm tra xem người dùng có đang kéo không
     let currentLabel = null; // Lưu trữ label hiện tại đang xoay
+    let angle = 0; // Biến lưu trữ góc xoay của label
 
     // Tạo marker với khả năng kéo và xoay
     function createMarker(id, lat, lng, labelText, imageUrl, isTSBD = false) {
@@ -163,7 +164,8 @@
       const rect = currentLabel.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      const angle = Math.atan2(event.clientY - centerY, event.clientX - centerX) * 180 / Math.PI; // Tính góc xoay
+      const angleRad = Math.atan2(event.clientY - centerY, event.clientX - centerX); // Tính góc xoay
+      angle = angleRad * 180 / Math.PI; // Chuyển đổi từ radian sang độ
 
       currentLabel.style.transform = `rotate(${angle}deg)`; // Áp dụng góc xoay cho label
     }
