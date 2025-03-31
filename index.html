@@ -6,10 +6,6 @@
   <title>Bản đồ TSBĐ & TSSS - BIDV</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.1/dist/leaflet.markercluster.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.1/dist/leaflet.markercluster.js"></script>
   <style>
     body { margin: 0; font-family: Arial, sans-serif; }
     #map { width: 100vw; height: 100vh; }
@@ -91,10 +87,10 @@
 </head>
 <body>
   <div class="controls">
-    <div><strong>TSBĐ:</strong><br><input id="tsbd" value="20.972560, 105.759441" /></div>
-    <div><strong>TSSS1:</strong><br><input id="tsss1" value="20.972826, 105.759655" /></div>
-    <div><strong>TSSS2:</strong><br><input id="tsss2" value="20.972994, 105.760282" /></div>
-    <div><strong>TSSS3:</strong><br><input id="tsss3" value="20.972550, 105.759702" /></div>
+    <div><strong>TSBĐ:</strong><br><input id="tsbd" value="10.7921658, 106.668698" /></div>
+    <div><strong>TSSS1:</strong><br><input id="tsss1" value="10.791913, 106.670962" /></div>
+    <div><strong>TSSS2:</strong><br><input id="tsss2" value="10.791909, 106.67442" /></div>
+    <div><strong>TSSS3:</strong><br><input id="tsss3" value="10.791997, 106.671874" /></div>
     <div style="text-align: center">
       <button onclick="updateMarkers()">Cập nhật</button>
       <button onclick="takeScreenshot()">Chụp ảnh</button>
@@ -103,15 +99,16 @@
 
   <div id="map"></div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
+
   <script>
-    const map = L.map('map').setView([20.972560, 105.759441], 17);
+    const map = L.map('map').setView([10.7921658, 106.668698], 17);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    const markersLayer = L.markerClusterGroup(); // Khởi tạo nhóm cluster
-    map.addLayer(markersLayer);  // Đảm bảo nhóm marker được thêm vào bản đồ
-
+    const markers = {};
     const screenshoter = L.simpleMapScreenshoter({
       hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
       preventDownload: true,
@@ -119,6 +116,10 @@
     }).addTo(map);
 
     function createMarker(id, lat, lng, labelText, imageUrl, isTSBD = false) {
+      if (markers[id]) {
+        map.removeLayer(markers[id]);
+      }
+
       const iconHtml = `
         <div class="label-icon">
           <div class="label-box">${labelText}</div>
@@ -132,25 +133,46 @@
         iconAnchor: [20, 50]
       });
 
-      const marker = L.marker([lat, lng], { icon }).addTo(markersLayer); // Thêm vào nhóm cluster
+      const marker = L.marker([lat, lng], { icon }).addTo(map);
+      markers[id] = marker;
       return marker;
     }
 
-    function updateMarkers() {
-      // Xóa tất cả các marker trước khi thêm mới
-      markersLayer.clearLayers();
+    // Hàm để kiểm tra và điều chỉnh vị trí các label nếu quá gần nhau
+    function adjustLabelPosition(markers) {
+      for (let i = 0; i < markers.length; i++) {
+        for (let j = i + 1; j < markers.length; j++) {
+          const latlng1 = markers[i].getLatLng();
+          const latlng2 = markers[j].getLatLng();
+          const distance = latlng1.distanceTo(latlng2); // Tính khoảng cách giữa các marker
 
+          if (distance < 10) { // Nếu các marker quá gần nhau
+            const offsetX = Math.random() * 5 - 2.5; // Nghiêng ngẫu nhiên một chút
+            const offsetY = Math.random() * 5 - 2.5;
+            const newLat = latlng2.lat + offsetY / 100000; // Điều chỉnh vị trí
+            const newLng = latlng2.lng + offsetX / 100000;
+            markers[j].setLatLng([newLat, newLng]); // Cập nhật vị trí của marker
+          }
+        }
+      }
+    }
+
+    function updateMarkers() {
       const [lat_tsbd, lng_tsbd] = document.getElementById("tsbd").value.split(',').map(Number);
       const [lat1, lng1] = document.getElementById("tsss1").value.split(',').map(Number);
       const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(Number);
       const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(Number);
 
-      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", true);
-      createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
-      createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
-      createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
+      const markersList = [
+        createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", true),
+        createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png"),
+        createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png"),
+        createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png")
+      ];
 
-      map.fitBounds(markersLayer.getBounds()); // Điều chỉnh bản đồ để chứa tất cả các marker
+      adjustLabelPosition(markersList); // Điều chỉnh vị trí nếu các label bị chồng lên nhau
+
+      map.fitBounds(markersList.map(marker => marker.getLatLng())); // Điều chỉnh bản đồ để chứa tất cả các marker
     }
 
     function takeScreenshot() {
@@ -168,8 +190,7 @@
       }, 800);
     }
 
-    // Tạo các marker ngay lập tức khi trang được tải
-    window.onload = updateMarkers; 
+    window.onload = updateMarkers;
   </script>
 </body>
 </html>
