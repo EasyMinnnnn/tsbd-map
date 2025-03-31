@@ -140,19 +140,27 @@
     }
 
     function updateMarkers() {
-      const [lat_tsbd, lng_tsbd] = document.getElementById("tsbd").value.split(',').map(Number);
-      const [lat1, lng1] = document.getElementById("tsss1").value.split(',').map(Number);
-      const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(Number);
-      const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(Number);
+      // Lấy tọa độ từ các input
+      const tsbdInput = document.getElementById("tsbd").value.split(',').map(x => x.trim());
+      const tsss1Input = document.getElementById("tsss1").value.split(',').map(x => x.trim());
+      const tsss2Input = document.getElementById("tsss2").value.split(',').map(x => x.trim());
+      const tsss3Input = document.getElementById("tsss3").value.split(',').map(x => x.trim());
 
+      // Chuyển đổi tọa độ thành số
+      const [lat_tsbd, lng_tsbd] = tsbdInput;
+      const [lat1, lng1] = tsss1Input;
+      const [lat2, lng2] = tsss2Input;
+      const [lat3, lng3] = tsss3Input;
+
+      // Cập nhật các marker
       createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", true);
       createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
       createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
       createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
 
-      map.addLayer(markersLayer); // Thêm nhóm marker vào bản đồ
-
-      map.fitBounds(markersLayer.getBounds()); // Điều chỉnh bản đồ để chứa tất cả các marker
+      // Thêm nhóm marker vào bản đồ và điều chỉnh bản đồ
+      map.addLayer(markersLayer);
+      map.fitBounds(markersLayer.getBounds());
     }
 
     function takeScreenshot() {
