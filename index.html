@@ -133,6 +133,26 @@
       });
 
       const marker = L.marker([lat, lng], { icon }).addTo(markersLayer); // Thêm vào nhóm cluster
+
+      return marker;
+    }
+
+    function adjustLabelPosition(markers) {
+      for (let i = 0; i < markers.length; i++) {
+        for (let j = i + 1; j < markers.length; j++) {
+          const latlng1 = markers[i].getLatLng();
+          const latlng2 = markers[j].getLatLng();
+          const distance = latlng1.distanceTo(latlng2); // Tính khoảng cách giữa các marker
+
+          if (distance < 10) { // Nếu quá gần nhau
+            const offsetX = Math.random() * 10 - 5; // Nghiêng ngẫu nhiên một chút
+            const offsetY = Math.random() * 10 - 5;
+            const newLat = latlng2.lat + offsetY / 100000; // Điều chỉnh vị trí
+            const newLng = latlng2.lng + offsetX / 100000;
+            markers[j].setLatLng([newLat, newLng]); // Cập nhật vị trí của marker
+          }
+        }
+      }
     }
 
     function updateMarkers() {
@@ -144,10 +164,14 @@
       const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(Number);
       const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(Number);
 
-      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", true);
-      createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
-      createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
-      createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
+      const markers = [
+        createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", true),
+        createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png"),
+        createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png"),
+        createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png")
+      ];
+
+      adjustLabelPosition(markers); // Điều chỉnh vị trí nếu chồng lên nhau
 
       map.fitBounds(markersLayer.getBounds()); // Điều chỉnh bản đồ để chứa tất cả các marker
     }
