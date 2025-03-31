@@ -58,7 +58,7 @@
       white-space: nowrap;
       box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
       position: relative;
-      transition: transform 0.2s ease; /* Thêm hiệu ứng khi xoay */
+      transition: transform 0.3s ease;
     }
 
     .label-box::after {
@@ -88,10 +88,10 @@
 </head>
 <body>
   <div class="controls">
-    <div><strong>TSBĐ:</strong><br><input id="tsbd" value="10.7921658, 106.668698" /></div>
-    <div><strong>TSSS1:</strong><br><input id="tsss1" value="10.791913, 106.670962" /></div>
-    <div><strong>TSSS2:</strong><br><input id="tsss2" value="10.791909, 106.67442" /></div>
-    <div><strong>TSSS3:</strong><br><input id="tsss3" value="10.791997, 106.671874" /></div>
+    <div><strong>TSBĐ:</strong><br><input id="tsbd" value="20.972560,105.759441" /></div>
+    <div><strong>TSSS1:</strong><br><input id="tsss1" value="20.972826, 105.759655" /></div>
+    <div><strong>TSSS2:</strong><br><input id="tsss2" value="20.972994, 105.760282" /></div>
+    <div><strong>TSSS3:</strong><br><input id="tsss3" value="20.972550, 105.759702" /></div>
     <div style="text-align: center">
       <button onclick="updateMarkers()">Cập nhật</button>
       <button onclick="takeScreenshot()">Chụp ảnh</button>
@@ -104,7 +104,7 @@
   <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
 
   <script>
-    const map = L.map('map').setView([10.7921658, 106.668698], 17);
+    const map = L.map('map').setView([20.972560, 105.759441], 17);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
@@ -139,7 +139,7 @@
       return marker;
     }
 
-    // Hàm để kiểm tra và điều chỉnh vị trí các label nếu quá gần nhau
+    // Hàm điều chỉnh vị trí các label nếu quá gần nhau
     function adjustLabelPosition(markers) {
       for (let i = 0; i < markers.length; i++) {
         for (let j = i + 1; j < markers.length; j++) {
@@ -147,8 +147,8 @@
           const latlng2 = markers[j].getLatLng();
           const distance = latlng1.distanceTo(latlng2); // Tính khoảng cách giữa các marker
 
-          if (distance < 10) { // Nếu các marker quá gần nhau
-            const angle = Math.random() * 10 - 5; // Xoay một góc ngẫu nhiên giữa -5 đến 5 độ
+          if (distance < 5) { // Nếu các marker quá gần nhau
+            const angle = Math.random() * 20 - 10; // Xoay label một góc ngẫu nhiên giữa -10 và 10 độ
             const labelBox = markers[j]._icon.querySelector(".label-box"); // Lấy phần tử label
             labelBox.style.transform = `rotate(${angle}deg)`; // Xoay label để tránh chồng lên
           }
@@ -189,7 +189,7 @@
       }, 800);
     }
 
-    window.onload = updateMarkers;
+    window.onload = updateMarkers; // Gọi updateMarkers ngay khi trang tải
   </script>
 </body>
 </html>
