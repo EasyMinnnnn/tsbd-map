@@ -6,6 +6,7 @@
   <title>Bản đồ TSBĐ & TSSS - BIDV</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-rotatemarker@0.0.1/dist/leaflet-rotatemarker.css" />
   <style>
     body { margin: 0; font-family: Arial, sans-serif; }
     #map { width: 100vw; height: 100vh; }
@@ -58,6 +59,7 @@
       white-space: nowrap;
       box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
       position: relative;
+      cursor: pointer;
     }
 
     .label-box::after {
@@ -101,6 +103,7 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
+  <script src="https://unpkg.com/leaflet-rotatemarker@0.0.1/dist/leaflet-rotatemarker.js"></script>
 
   <script>
     const map = L.map('map').setView([20.972560, 105.759441], 17);
@@ -115,6 +118,7 @@
       position: 'topright'
     }).addTo(map);
 
+    // Tạo marker với khả năng kéo và xoay
     function createMarker(id, lat, lng, labelText, imageUrl, isTSBD = false) {
       if (markers[id]) {
         map.removeLayer(markers[id]);
@@ -133,26 +137,18 @@
         iconAnchor: [20, 50]
       });
 
-      const marker = L.marker([lat, lng], { icon }).addTo(map);
+      const marker = L.marker([lat, lng], { icon, draggable: true }).addTo(map);
       markers[id] = marker;
+
+      // Xoay marker
+      marker.on('dragend', function() {
+        const latLng = marker.getLatLng();
+        const angle = Math.random() * 20 - 10; // Xoay ngẫu nhiên
+        const labelBox = marker._icon.querySelector(".label-box");
+        labelBox.style.transform = `rotate(${angle}deg)`; // Xoay theo góc ngẫu nhiên
+      });
+
       return marker;
-    }
-
-    // Hàm để xoay label tránh chồng lên nhau theo hướng bạn yêu cầu
-    function adjustLabelPosition(markers) {
-      for (let i = 0; i < markers.length; i++) {
-        for (let j = i + 1; j < markers.length; j++) {
-          const latlng1 = markers[i].getLatLng();
-          const latlng2 = markers[j].getLatLng();
-          const distance = latlng1.distanceTo(latlng2); // Tính khoảng cách giữa các marker
-
-          if (distance < 10) { // Nếu các marker quá gần nhau
-            const angle = 30; // Xoay góc 30 độ theo hướng bạn yêu cầu (dựa theo hướng vẽ màu đỏ)
-            const labelBox = markers[j]._icon.querySelector(".label-box"); // Lấy phần tử label
-            labelBox.style.transform = `rotate(${angle}deg)`; // Xoay label theo góc 30 độ
-          }
-        }
-      }
     }
 
     function updateMarkers() {
@@ -167,8 +163,6 @@
         createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png"),
         createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png")
       ];
-
-      adjustLabelPosition(markersList); // Điều chỉnh vị trí nếu các label bị chồng lên nhau
 
       map.fitBounds(markersList.map(marker => marker.getLatLng())); // Điều chỉnh bản đồ để chứa tất cả các marker
     }
