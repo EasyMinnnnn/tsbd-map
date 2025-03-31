@@ -110,6 +110,7 @@
     }).addTo(map);
 
     const markersLayer = L.markerClusterGroup(); // Khởi tạo nhóm cluster
+    map.addLayer(markersLayer);  // Đảm bảo nhóm marker được thêm vào bản đồ
 
     const screenshoter = L.simpleMapScreenshoter({
       hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
@@ -135,6 +136,9 @@
     }
 
     function updateMarkers() {
+      // Xóa tất cả các marker trước khi thêm mới
+      markersLayer.clearLayers();
+
       const [lat_tsbd, lng_tsbd] = document.getElementById("tsbd").value.split(',').map(Number);
       const [lat1, lng1] = document.getElementById("tsss1").value.split(',').map(Number);
       const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(Number);
@@ -145,7 +149,6 @@
       createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
       createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
 
-      map.addLayer(markersLayer);
       map.fitBounds(markersLayer.getBounds()); // Điều chỉnh bản đồ để chứa tất cả các marker
     }
 
