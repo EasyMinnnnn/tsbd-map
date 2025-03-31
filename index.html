@@ -58,6 +58,7 @@
       white-space: nowrap;
       box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
       position: relative;
+      transition: transform 0.2s ease; /* Thêm hiệu ứng khi xoay */
     }
 
     .label-box::after {
@@ -147,11 +148,9 @@
           const distance = latlng1.distanceTo(latlng2); // Tính khoảng cách giữa các marker
 
           if (distance < 10) { // Nếu các marker quá gần nhau
-            const offsetX = Math.random() * 5 - 2.5; // Nghiêng ngẫu nhiên một chút
-            const offsetY = Math.random() * 5 - 2.5;
-            const newLat = latlng2.lat + offsetY / 100000; // Điều chỉnh vị trí
-            const newLng = latlng2.lng + offsetX / 100000;
-            markers[j].setLatLng([newLat, newLng]); // Cập nhật vị trí của marker
+            const angle = Math.random() * 10 - 5; // Xoay một góc ngẫu nhiên giữa -5 đến 5 độ
+            const labelBox = markers[j]._icon.querySelector(".label-box"); // Lấy phần tử label
+            labelBox.style.transform = `rotate(${angle}deg)`; // Xoay label để tránh chồng lên
           }
         }
       }
