@@ -75,18 +75,6 @@
             width: 40px;
             height: 40px;
         }
-        #loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            display: none;
-            z-index: 1001;
-        }
     </style>
 </head>
 <body>
@@ -101,7 +89,6 @@
         </div>
     </div>
     <div id="map"></div>
-    <div id="loading">Đang chụp ảnh...</div>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
     <script>
@@ -121,8 +108,8 @@
             }
             const iconHtml = `
                 <div class="label-icon">
-                    <div class="label-box"><span class="math-inline">\{labelText\}</div\>
-<img src\="</span>{imageUrl}" class="${isTSBD ? 'tsbd-img' : 'label-img'}" />
+                    <div class="label-box">${labelText}</div>
+                    <img src="${imageUrl}" class="${isTSBD ? 'tsbd-img' : 'label-img'}" />
                 </div>
             `;
             const icon = L.divIcon({
@@ -175,7 +162,6 @@
             map.fitBounds(markersList.map(marker => marker.getLatLng()));
         }
         function takeScreenshot() {
-            document.getElementById('loading').style.display = 'block';
             const [lat, lng] = document.getElementById("tsbd").value.split(',').map(x => x.trim());
             const filename = `TSBD_${lat},${lng}.png`;
             setTimeout(() => {
@@ -186,9 +172,10 @@
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    document.getElementById('loading').style.display = 'none';
                 });
             }, 800);
         }
         window.onload = updateMarkers;
     </script>
+</body>
+</html>
