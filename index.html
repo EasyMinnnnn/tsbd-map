@@ -45,6 +45,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      cursor: grab;
     }
 
     .label-box {
@@ -58,6 +59,7 @@
       white-space: nowrap;
       box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
       position: relative;
+      cursor: pointer;
     }
 
     .label-box::after {
@@ -121,7 +123,7 @@
       }
 
       const iconHtml = `
-        <div class="label-icon">
+        <div class="label-icon" draggable="true" ondragstart="startDrag(event, '${id}')">
           <div class="label-box">${labelText}</div>
           <img src="${imageUrl}" class="${isTSBD ? 'tsbd-img' : 'label-img'}" />
         </div>
@@ -133,9 +135,20 @@
         iconAnchor: [20, 50]
       });
 
-      const marker = L.marker([lat, lng], { icon }).addTo(map);
+      const marker = L.marker([lat, lng], { icon, draggable: true }).addTo(map);
       markers[id] = marker;
       return marker;
+    }
+
+    function startDrag(event, id) {
+      event.dataTransfer.setData("text", id);
+    }
+
+    function dropMarker(event) {
+      event.preventDefault();
+      const id = event.dataTransfer.getData("text");
+      const newLatLng = map.mouseEventToLatLng(event.originalEvent);
+      markers[id].setLatLng(newLatLng);
     }
 
     // Hàm để kiểm tra và dịch chuyển label nếu quá gần nhau
@@ -162,6 +175,17 @@
       const [lat1, lng1] = document.getElementById("tsss1").value.split(',').map(Number);
       const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(Number);
       const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(Number);
+
+      // Kiểm tra tọa độ hợp lệ
+      if (
+        isNaN(lat_tsbd) || isNaN(lng_tsbd) ||
+        isNaN(lat1) || isNaN(lng1) ||
+        isNaN(lat2) || isNaN(lng2) ||
+        isNaN(lat3) || isNaN(lng3)
+      ) {
+        alert("Vui lòng nhập tọa độ hợp lệ.");
+        return;
+      }
 
       const markersList = [
         createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", true),
