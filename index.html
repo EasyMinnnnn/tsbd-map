@@ -181,34 +181,4 @@
       const [lat_tsbd, lng_tsbd] = document.getElementById("tsbd").value.split(',').map(Number);
       const [lat1, lng1] = document.getElementById("tsss1").value.split(',').map(Number);
       const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(Number);
-      const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(Number);
-
-      const markersList = [
-        createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", true),
-        createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png"),
-        createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png"),
-        createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png")
-      ];
-
-      map.fitBounds(markersList.map(marker => marker.getLatLng())); // Điều chỉnh bản đồ để chứa tất cả các marker
-    }
-
-    function takeScreenshot() {
-      const [lat, lng] = document.getElementById("tsbd").value.split(',').map(x => x.trim());
-      const filename = `TSBD_${lat},${lng}.png`;
-      setTimeout(() => {
-        screenshoter.takeScreen('blob').then(blob => {
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = filename;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        });
-      }, 800);
-    }
-
-    window.onload = updateMarkers; // Gọi updateMarkers ngay khi trang tải
-  </script>
-</body>
-</html>
+      const [lat3, lng3] = document.getElementById
