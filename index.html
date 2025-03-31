@@ -1,181 +1,196 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bản đồ TSBĐ & TSSS - BIDV</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css" />
-    <style>
-        body { margin: 0; font-family: Arial, sans-serif; }
-        #map { width: 100vw; height: 100vh; }
-        .controls {
-            position: absolute;
-            top: 10px;
-            left: 60px;
-            background-color: rgba(0, 125, 120, 0.9);
-            padding: 10px;
-            border-radius: 8px;
-            color: white;
-            z-index: 1000;
-        }
-        .controls input {
-            margin: 4px 0;
-            padding: 6px;
-            border-radius: 4px;
-            border: none;
-            width: 220px;
-            font-size: 14px;
-        }
-        .controls button {
-            background-color: #f2c94c;
-            color: black;
-            border: none;
-            padding: 6px 12px;
-            margin-top: 8px;
-            margin-right: 5px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .label-icon {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .label-box {
-            background-color: #007d78;
-            color: #f2c94c;
-            font-weight: bold;
-            padding: 6px 10px;
-            font-size: 13px;
-            border-radius: 6px;
-            border: 2px solid #007d78;
-            white-space: nowrap;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-            position: relative;
-        }
-        .label-box::after {
-            content: "";
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-top: 10px solid #007d78;
-        }
-        .label-img {
-            width: 35px;
-            height: 35px;
-            margin-top: 4px;
-        }
-        .tsbd-img {
-            width: 40px;
-            height: 40px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bản đồ TSBĐ & TSSS - BIDV</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css" />
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; }
+    #map { width: 100vw; height: 100vh; }
+
+    .controls {
+      position: absolute;
+      top: 10px;
+      left: 60px;
+      background-color: rgba(0, 125, 120, 0.9);
+      padding: 10px;
+      border-radius: 8px;
+      color: white;
+      z-index: 1000;
+    }
+
+    .controls input {
+      margin: 4px 0;
+      padding: 6px;
+      border-radius: 4px;
+      border: none;
+      width: 220px;
+      font-size: 14px;
+    }
+
+    .controls button {
+      background-color: #f2c94c;
+      color: black;
+      border: none;
+      padding: 6px 12px;
+      margin-top: 8px;
+      margin-right: 5px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .label-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .label-box {
+      background-color: #007d78;
+      color: #f2c94c;
+      font-weight: bold;
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: 6px;
+      border: 2px solid #007d78;
+      white-space: nowrap;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+
+    .label-box::after {
+      content: "";
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 10px solid #007d78;
+    }
+
+    .label-img {
+      width: 35px;
+      height: 35px;
+      margin-top: 4px;
+    }
+
+    .tsbd-img {
+      width: 40px;
+      height: 40px;
+    }
+  </style>
 </head>
 <body>
-    <div class="controls">
-        <div><strong>TSBĐ:</strong><br><input id="tsbd" value="20.972560, 105.759441" /></div>
-        <div><strong>TSSS1:</strong><br><input id="tsss1" value="20.972826, 105.759655" /></div>
-        <div><strong>TSSS2:</strong><br><input id="tsss2" value="20.972994, 105.760282" /></div>
-        <div><strong>TSSS3:</strong><br><input id="tsss3" value="20.972550, 105.759702" /></div>
-        <div style="text-align: center">
-            <button onclick="updateMarkers()">Cập nhật</button>
-            <button onclick="takeScreenshot()">Chụp ảnh</button>
-        </div>
+  <div class="controls">
+    <div><strong>TSBĐ:</strong><br><input id="tsbd" value="20.972560, 105.759441" /></div>
+    <div><strong>TSSS1:</strong><br><input id="tsss1" value="20.972826, 105.759655" /></div>
+    <div><strong>TSSS2:</strong><br><input id="tsss2" value="20.972994, 105.760282" /></div>
+    <div><strong>TSSS3:</strong><br><input id="tsss3" value="20.972550, 105.759702" /></div>
+    <div style="text-align: center">
+      <button onclick="updateMarkers()">Cập nhật</button>
+      <button onclick="takeScreenshot()">Chụp ảnh</button>
     </div>
-    <div id="map"></div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
-    <script>
-        const map = L.map('map').setView([20.972560, 105.759441], 17);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
-        const markers = {};
-        const screenshoter = L.simpleMapScreenshoter({
-            hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
-            preventDownload: true,
-            position: 'topright'
-        }).addTo(map);
-        function createMarker(id, lat, lng, labelText, imageUrl, isTSBD = false) {
-            if (markers[id]) {
-                map.removeLayer(markers[id]);
-            }
-            const iconHtml = `
-                <div class="label-icon">
-                    <div class="label-box">${labelText}</div>
-                    <img src="${imageUrl}" class="${isTSBD ? 'tsbd-img' : 'label-img'}" />
-                </div>
-            `;
-            const icon = L.divIcon({
-                className: "",
-                html: iconHtml,
-                iconAnchor: [20, 50]
-            });
-            const marker = L.marker([lat, lng], { icon }).addTo(map);
-            markers[id] = marker;
-            return marker;
+  </div>
+
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
+
+  <script>
+    const map = L.map('map').setView([20.972560, 105.759441], 17);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const markers = {};
+    const screenshoter = L.simpleMapScreenshoter({
+      hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
+      preventDownload: true,
+      position: 'topright'
+    }).addTo(map);
+
+    function createMarker(id, lat, lng, labelText, imageUrl, isTSBD = false) {
+      if (markers[id]) {
+        map.removeLayer(markers[id]);
+      }
+
+      const iconHtml = `
+        <div class="label-icon">
+          <div class="label-box">${labelText}</div>
+          <img src="${imageUrl}" class="${isTSBD ? 'tsbd-img' : 'label-img'}" />
+        </div>
+      `;
+
+      const icon = L.divIcon({
+        className: "",
+        html: iconHtml,
+        iconAnchor: [20, 50]
+      });
+
+      const marker = L.marker([lat, lng], { icon }).addTo(map);
+      markers[id] = marker;
+      return marker;
+    }
+
+    // Hàm để kiểm tra và dịch chuyển label nếu quá gần nhau
+    function adjustLabelPosition(markers) {
+      for (let i = 0; i < markers.length; i++) {
+        for (let j = i + 1; j < markers.length; j++) {
+          const latlng1 = markers[i].getLatLng();
+          const latlng2 = markers[j].getLatLng();
+          const distance = latlng1.distanceTo(latlng2); // Tính khoảng cách giữa các marker
+
+          if (distance < 10) { // Nếu các marker quá gần nhau
+            const offsetX = Math.random() * 5 - 2.5; // Dịch chuyển ngẫu nhiên
+            const offsetY = Math.random() * 5 - 2.5;
+            const newLat = latlng2.lat + offsetY / 100000; // Điều chỉnh vị trí
+            const newLng = latlng2.lng + offsetX / 100000;
+            markers[j].setLatLng([newLat, newLng]); // Cập nhật vị trí của marker
+          }
         }
-        function adjustLabelPosition(markers) {
-            const adjustedMarkers = [];
-            for (let i = 0; i < markers.length; i++) {
-                let currentMarker = markers[i];
-                let currentLatLng = currentMarker.getLatLng();
-                let isOverlapping;
-                let attempts = 0;
-                do {
-                    isOverlapping = false;
-                    for (let j = 0; j < adjustedMarkers.length; j++) {
-                        let adjustedLatLng = adjustedMarkers[j].getLatLng();
-                        let distance = currentLatLng.distanceTo(adjustedLatLng);
-                        if (distance < 20) {
-                            let offsetX = Math.random() * 10 - 5;
-                            let offsetY = Math.random() * 10 - 5;
-                            currentLatLng = L.latLng(currentLatLng.lat + offsetY / 100000, currentLatLng.lng + offsetX / 100000);
-                            currentMarker.setLatLng(currentLatLng);
-                            isOverlapping = true;
-                            break;
-                        }
-                    }
-                    attempts++;
-                } while (isOverlapping && attempts < 10);
-                adjustedMarkers.push(currentMarker);
-            }
-        }
-        function updateMarkers() {
-            const [lat_tsbd, lng_tsbd] = document.getElementById("tsbd").value.split(',').map(Number);
-            const [lat1, lng1] = document.getElementById("tsss1").value.split(',').map(Number);
-            const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(Number);
-            const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(Number);
-            const markersList = [
-                createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", true),
-                createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png"),
-                createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png"),
-                createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png")
-            ];
-            adjustLabelPosition(markersList);
-            map.fitBounds(markersList.map(marker => marker.getLatLng()));
-        }
-        function takeScreenshot() {
-            const [lat, lng] = document.getElementById("tsbd").value.split(',').map(x => x.trim());
-            const filename = `TSBD_${lat},${lng}.png`;
-            setTimeout(() => {
-                screenshoter.takeScreen('blob').then(blob => {
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = filename;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                });
-            }, 800);
-        }
-        window.onload = updateMarkers;
-    </script>
+      }
+    }
+
+    function updateMarkers() {
+      const [lat_tsbd, lng_tsbd] = document.getElementById("tsbd").value.split(',').map(Number);
+      const [lat1, lng1] = document.getElementById("tsss1").value.split(',').map(Number);
+      const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(Number);
+      const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(Number);
+
+      const markersList = [
+        createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", true),
+        createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png"),
+        createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png"),
+        createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png")
+      ];
+
+      adjustLabelPosition(markersList); // Điều chỉnh vị trí nếu các label bị chồng lên nhau
+
+      map.fitBounds(markersList.map(marker => marker.getLatLng())); // Điều chỉnh bản đồ để chứa tất cả các marker
+    }
+
+    function takeScreenshot() {
+      const [lat, lng] = document.getElementById("tsbd").value.split(',').map(x => x.trim());
+      const filename = `TSBD_${lat},${lng}.png`;
+      setTimeout(() => {
+        screenshoter.takeScreen('blob').then(blob => {
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        });
+      }, 800);
+    }
+
+    window.onload = updateMarkers; // Gọi updateMarkers ngay khi trang tải
+  </script>
 </body>
 </html>
