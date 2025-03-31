@@ -88,7 +88,7 @@
 </head>
 <body>
   <div class="controls">
-    <div><strong>TSBĐ:</strong><br><input id="tsbd" value="20.972560,105.759441" /></div>
+    <div><strong>TSBĐ:</strong><br><input id="tsbd" value="20.972560, 105.759441" /></div>
     <div><strong>TSSS1:</strong><br><input id="tsss1" value="20.972826, 105.759655" /></div>
     <div><strong>TSSS2:</strong><br><input id="tsss2" value="20.972994, 105.760282" /></div>
     <div><strong>TSSS3:</strong><br><input id="tsss3" value="20.972550, 105.759702" /></div>
@@ -139,7 +139,7 @@
       return marker;
     }
 
-    // Hàm điều chỉnh vị trí các label nếu quá gần nhau
+    // Hàm điều chỉnh xoay các label nếu quá gần nhau
     function adjustLabelPosition(markers) {
       for (let i = 0; i < markers.length; i++) {
         for (let j = i + 1; j < markers.length; j++) {
@@ -147,10 +147,10 @@
           const latlng2 = markers[j].getLatLng();
           const distance = latlng1.distanceTo(latlng2); // Tính khoảng cách giữa các marker
 
-          if (distance < 5) { // Nếu các marker quá gần nhau
-            const angle = Math.random() * 20 - 10; // Xoay label một góc ngẫu nhiên giữa -10 và 10 độ
+          if (distance < 10) { // Nếu khoảng cách giữa các label quá gần
+            const angle = Math.random() * 20 - 10; // Xoay ngẫu nhiên một góc giữa -10 và 10 độ
             const labelBox = markers[j]._icon.querySelector(".label-box"); // Lấy phần tử label
-            labelBox.style.transform = `rotate(${angle}deg)`; // Xoay label để tránh chồng lên
+            labelBox.style.transform = `rotate(${angle}deg)`; // Xoay label
           }
         }
       }
