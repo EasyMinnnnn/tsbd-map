@@ -85,6 +85,11 @@
       width: 40px;
       height: 40px;
     }
+
+    /* Style for draggable labels */
+    .draggable-label {
+      cursor: move;
+    }
   </style>
 </head>
 <body>
@@ -123,8 +128,8 @@
       }
 
       const iconHtml = `
-        <div class="label-icon" draggable="true" ondragstart="startDrag(event, '${id}')">
-          <div class="label-box">${labelText}</div>
+        <div class="label-icon draggable-label" draggable="true" ondragstart="startDrag(event, '${id}')">
+          <div class="label-box" id="label-box-${id}">${labelText}</div>
           <img src="${imageUrl}" class="${isTSBD ? 'tsbd-img' : 'label-img'}" />
         </div>
       `;
@@ -135,7 +140,7 @@
         iconAnchor: [20, 50]
       });
 
-      const marker = L.marker([lat, lng], { icon, draggable: true }).addTo(map);
+      const marker = L.marker([lat, lng], { icon }).addTo(map);
       markers[id] = marker;
       return marker;
     }
@@ -151,23 +156,9 @@
       markers[id].setLatLng(newLatLng);
     }
 
-    // Hàm để kiểm tra và dịch chuyển label nếu quá gần nhau
-    function adjustLabelPosition(markers) {
-      for (let i = 0; i < markers.length; i++) {
-        for (let j = i + 1; j < markers.length; j++) {
-          const latlng1 = markers[i].getLatLng();
-          const latlng2 = markers[j].getLatLng();
-          const distance = latlng1.distanceTo(latlng2); // Tính khoảng cách giữa các marker
-
-          if (distance < 10) { // Nếu các marker quá gần nhau
-            const offsetX = Math.random() * 5 - 2.5; // Dịch chuyển ngẫu nhiên
-            const offsetY = Math.random() * 5 - 2.5;
-            const newLat = latlng2.lat + offsetY / 100000; // Điều chỉnh vị trí
-            const newLng = latlng2.lng + offsetX / 100000;
-            markers[j].setLatLng([newLat, newLng]); // Cập nhật vị trí của marker
-          }
-        }
-      }
+    function rotateLabel(id, angle) {
+      const label = document.getElementById(`label-box-${id}`);
+      label.style.transform = `rotate(${angle}deg)`;
     }
 
     function updateMarkers() {
@@ -193,8 +184,6 @@
         createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png"),
         createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png")
       ];
-
-      adjustLabelPosition(markersList); // Điều chỉnh vị trí nếu các label bị chồng lên nhau
 
       map.fitBounds(markersList.map(marker => marker.getLatLng())); // Điều chỉnh bản đồ để chứa tất cả các marker
     }
