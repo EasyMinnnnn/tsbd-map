@@ -118,6 +118,9 @@
       position: 'topright'
     }).addTo(map);
 
+    let isDragging = false; // Biến để kiểm tra xem người dùng có đang kéo không
+    let currentLabel = null; // Lưu trữ label hiện tại đang xoay
+
     // Tạo marker với khả năng kéo và xoay
     function createMarker(id, lat, lng, labelText, imageUrl, isTSBD = false) {
       if (markers[id]) {
@@ -125,7 +128,7 @@
       }
 
       const iconHtml = `
-        <div class="label-icon" onclick="rotateLabel(event)">
+        <div class="label-icon" onmousedown="startRotation(event)">
           <div class="label-box">${labelText}</div>
           <img src="${imageUrl}" class="${isTSBD ? 'tsbd-img' : 'label-img'}" />
         </div>
@@ -143,12 +146,33 @@
       return marker;
     }
 
-    // Hàm để xoay label khi click vào
+    // Hàm để bắt đầu quá trình xoay khi giữ chuột
+    function startRotation(event) {
+      isDragging = true;
+      currentLabel = event.target.closest('.label-box'); // Lấy label đang được nhấp vào
+
+      // Lắng nghe sự kiện di chuyển chuột
+      document.addEventListener('mousemove', rotateLabel);
+      document.addEventListener('mouseup', endRotation);
+    }
+
+    // Hàm xoay label khi di chuyển chuột
     function rotateLabel(event) {
-      const labelBox = event.target.closest('.label-box');
-      let currentRotation = parseInt(labelBox.style.transform.replace('rotate(', '').replace('deg)', '')) || 0;
-      currentRotation += 15; // Mỗi lần click, xoay 15 độ
-      labelBox.style.transform = `rotate(${currentRotation}deg)`; // Cập nhật góc xoay
+      if (!isDragging || !currentLabel) return;
+
+      const rect = currentLabel.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const angle = Math.atan2(event.clientY - centerY, event.clientX - centerX) * 180 / Math.PI; // Tính góc xoay
+
+      currentLabel.style.transform = `rotate(${angle}deg)`; // Áp dụng góc xoay cho label
+    }
+
+    // Hàm kết thúc việc xoay khi thả chuột
+    function endRotation() {
+      isDragging = false;
+      document.removeEventListener('mousemove', rotateLabel);
+      document.removeEventListener('mouseup', endRotation);
     }
 
     function updateMarkers() {
