@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -45,7 +47,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      cursor: grab;
     }
 
     .label-box {
@@ -59,7 +60,6 @@
       white-space: nowrap;
       box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
       position: relative;
-      cursor: pointer;
     }
 
     .label-box::after {
@@ -85,26 +85,14 @@
       width: 40px;
       height: 40px;
     }
-
-    /* Để label có thể xoay */
-    .draggable-label {
-      cursor: move;
-      transform-origin: center;
-    }
-    .label-container {
-      position: absolute;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
   </style>
 </head>
 <body>
   <div class="controls">
-    <div><strong>TSBĐ:</strong><br><input id="tsbd" value="20.972560, 105.759441" /></div>
-    <div><strong>TSSS1:</strong><br><input id="tsss1" value="20.972826, 105.759655" /></div>
-    <div><strong>TSSS2:</strong><br><input id="tsss2" value="20.972994, 105.760282" /></div>
-    <div><strong>TSSS3:</strong><br><input id="tsss3" value="20.972550, 105.759702" /></div>
+    <div><strong>TSBĐ:</strong><br><input id="tsbd" value="10.7921658, 106.668698" /></div>
+    <div><strong>TSSS1:</strong><br><input id="tsss1" value="10.791913, 106.670962" /></div>
+    <div><strong>TSSS2:</strong><br><input id="tsss2" value="10.791909, 106.67442" /></div>
+    <div><strong>TSSS3:</strong><br><input id="tsss3" value="10.791997, 106.671874" /></div>
     <div style="text-align: center">
       <button onclick="updateMarkers()">Cập nhật</button>
       <button onclick="takeScreenshot()">Chụp ảnh</button>
@@ -117,99 +105,58 @@
   <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
 
   <script>
-    const map = L.map('map').setView([20.972560, 105.759441], 17);
+    const map = L.map('map').setView([10.7921658, 106.668698], 17);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    const labels = [];
+    const markers = {};
+
     const screenshoter = L.simpleMapScreenshoter({
       hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
       preventDownload: true,
       position: 'topright'
     }).addTo(map);
 
-    function createMarker(lat, lng, imageUrl, isTSBD = false) {
-      const icon = L.icon({
-        iconUrl: imageUrl,
-        iconSize: isTSBD ? [40, 40] : [35, 35]
+    function createMarker(id, lat, lng, labelText, imageUrl, isTSBD = false) {
+      if (markers[id]) {
+        map.removeLayer(markers[id]);
+      }
+
+      const iconHtml = `
+        <div class="label-icon">
+          <div class="label-box">${labelText}</div>
+          <img src="${imageUrl}" class="${isTSBD ? 'tsbd-img' : 'label-img'}" />
+        </div>
+      `;
+
+      const icon = L.divIcon({
+        className: "",
+        html: iconHtml,
+        iconAnchor: [20, 50]
       });
 
-      L.marker([lat, lng], { icon }).addTo(map);
-    }
-
-    function createLabel(id, labelText, lat, lng) {
-      const labelContainer = document.createElement('div');
-      labelContainer.className = 'label-container';
-      labelContainer.style.left = '50%';
-      labelContainer.style.top = '50%';
-
-      const labelBox = document.createElement('div');
-      labelBox.className = 'label-box draggable-label';
-      labelBox.innerHTML = labelText;
-      labelBox.id = `label-${id}`;
-      labelBox.onmousedown = (event) => startDrag(event, id);
-
-      labelContainer.appendChild(labelBox);
-      document.body.appendChild(labelContainer);
-
-      labels.push({ id, container: labelContainer, lat, lng });
-    }
-
-    function startDrag(event, id) {
-      const label = document.getElementById(`label-${id}`);
-      const container = label.parentElement;
-      let shiftX = event.clientX - container.getBoundingClientRect().left;
-      let shiftY = event.clientY - container.getBoundingClientRect().top;
-
-      label.classList.add('dragging');
-
-      function moveAt(pageX, pageY) {
-        container.style.left = pageX - shiftX + 'px';
-        container.style.top = pageY - shiftY + 'px';
-      }
-
-      function onMouseMove(event) {
-        moveAt(event.pageX, event.pageY);
-      }
-
-      document.addEventListener('mousemove', onMouseMove);
-
-      label.onmouseup = function() {
-        document.removeEventListener('mousemove', onMouseMove);
-        label.onmouseup = null;
-        label.classList.remove('dragging');
-      };
+      const marker = L.marker([lat, lng], { icon }).addTo(map);
+      markers[id] = marker;
     }
 
     function updateMarkers() {
-      labels.forEach(label => document.body.removeChild(label.container));
-      labels.length = 0;
-
       const [lat_tsbd, lng_tsbd] = document.getElementById("tsbd").value.split(',').map(Number);
       const [lat1, lng1] = document.getElementById("tsss1").value.split(',').map(Number);
       const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(Number);
       const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(Number);
 
-      if (isNaN(lat_tsbd) || isNaN(lng_tsbd) ||
-          isNaN(lat1) || isNaN(lng1) ||
-          isNaN(lat2) || isNaN(lng2) ||
-          isNaN(lat3) || isNaN(lng3)) {
-        alert("Vui lòng nhập tọa độ hợp lệ.");
-        return;
-      }
+      createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", true);
+      createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
+      createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
+      createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
 
-      createMarker(lat_tsbd, lng_tsbd, "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", true);
-      createMarker(lat1, lng1, "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
-      createMarker(lat2, lng2, "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
-      createMarker(lat3, lng3, "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
-
-      createLabel("tsbd", "TSBĐ", lat_tsbd, lng_tsbd);
-      createLabel("tsss1", "TSSS 1", lat1, lng1);
-      createLabel("tsss2", "TSSS 2", lat2, lng2);
-      createLabel("tsss3", "TSSS 3", lat3, lng3);
-
-      map.setView([lat_tsbd, lng_tsbd], 17);
+      map.fitBounds([
+        [lat_tsbd, lng_tsbd],
+        [lat1, lng1],
+        [lat2, lng2],
+        [lat3, lng3],
+      ]);
     }
 
     function takeScreenshot() {
@@ -227,7 +174,8 @@
       }, 800);
     }
 
-    window.onload = updateMarkers; // Gọi updateMarkers ngay khi trang tải
+    window.onload = updateMarkers;
   </script>
 </body>
 </html>
+
