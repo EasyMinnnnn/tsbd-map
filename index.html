@@ -122,93 +122,94 @@
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    const markers = {};
+    const labels = [];
     const screenshoter = L.simpleMapScreenshoter({
       hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
       preventDownload: true,
       position: 'topright'
     }).addTo(map);
 
-    function createMarker(id, lat, lng, labelText, imageUrl, isTSBD = false) {
-      if (markers[id]) {
-        map.removeLayer(markers[id]);
-      }
-
-      const iconHtml = `
-        <div class="label-icon draggable-label" id="label-${id}" onmousedown="startDrag(event, '${id}')">
-          <div class="label-box">${labelText}</div>
-          <img src="${imageUrl}" class="${isTSBD ? 'tsbd-img' : 'label-img'}" />
-        </div>
-      `;
-
-      const icon = L.divIcon({
-        className: "",
-        html: iconHtml,
-        iconAnchor: [20, 50]
+    function createMarker(lat, lng, imageUrl, isTSBD = false) {
+      const icon = L.icon({
+        iconUrl: imageUrl,
+        iconSize: isTSBD ? [40, 40] : [35, 35]
       });
 
-      const marker = L.marker([lat, lng], { icon, draggable: false }).addTo(map); // Markers không thể di chuyển, chỉ label
-      markers[id] = marker;
-      return marker;
+      L.marker([lat, lng], { icon }).addTo(map);
     }
 
-    // Bắt đầu kéo label
+    function createLabel(id, labelText, lat, lng) {
+      const labelContainer = document.createElement('div');
+      labelContainer.className = 'label-container';
+      labelContainer.style.left = '50%';
+      labelContainer.style.top = '50%';
+
+      const labelBox = document.createElement('div');
+      labelBox.className = 'label-box draggable-label';
+      labelBox.innerHTML = labelText;
+      labelBox.id = `label-${id}`;
+      labelBox.onmousedown = (event) => startDrag(event, id);
+
+      labelContainer.appendChild(labelBox);
+      document.body.appendChild(labelContainer);
+
+      labels.push({ id, container: labelContainer, lat, lng });
+    }
+
     function startDrag(event, id) {
       const label = document.getElementById(`label-${id}`);
+      const container = label.parentElement;
+      let shiftX = event.clientX - container.getBoundingClientRect().left;
+      let shiftY = event.clientY - container.getBoundingClientRect().top;
+
       label.classList.add('dragging');
-      label.setAttribute('draggable', true);
-      label.addEventListener('drag', function(e) {
-        updateLabelPosition(id, e.clientX, e.clientY);
-      });
 
-      label.addEventListener('dragend', function() {
-        label.classList.remove('dragging');
-        label.removeAttribute('draggable');
-      });
-    }
-
-    // Cập nhật vị trí của label khi kéo
-    function updateLabelPosition(id, x, y) {
-      const label = document.getElementById(`label-${id}`);
-      label.style.position = 'absolute';
-      label.style.left = `${x}px`;
-      label.style.top = `${y}px`;
-    }
-
-    // Xoay label khi giữ chuột phải
-    let rotationAngle = 0;
-    function rotateLabel(event, id) {
-      if (event.button === 2) { // Chuột phải
-        rotationAngle += 15;
-        const label = document.getElementById(`label-${id}`);
-        label.style.transform = `rotate(${rotationAngle}deg)`;
+      function moveAt(pageX, pageY) {
+        container.style.left = pageX - shiftX + 'px';
+        container.style.top = pageY - shiftY + 'px';
       }
+
+      function onMouseMove(event) {
+        moveAt(event.pageX, event.pageY);
+      }
+
+      document.addEventListener('mousemove', onMouseMove);
+
+      label.onmouseup = function() {
+        document.removeEventListener('mousemove', onMouseMove);
+        label.onmouseup = null;
+        label.classList.remove('dragging');
+      };
     }
 
     function updateMarkers() {
+      labels.forEach(label => document.body.removeChild(label.container));
+      labels.length = 0;
+
       const [lat_tsbd, lng_tsbd] = document.getElementById("tsbd").value.split(',').map(Number);
       const [lat1, lng1] = document.getElementById("tsss1").value.split(',').map(Number);
       const [lat2, lng2] = document.getElementById("tsss2").value.split(',').map(Number);
       const [lat3, lng3] = document.getElementById("tsss3").value.split(',').map(Number);
 
-      if (
-        isNaN(lat_tsbd) || isNaN(lng_tsbd) ||
-        isNaN(lat1) || isNaN(lng1) ||
-        isNaN(lat2) || isNaN(lng2) ||
-        isNaN(lat3) || isNaN(lng3)
-      ) {
+      if (isNaN(lat_tsbd) || isNaN(lng_tsbd) ||
+          isNaN(lat1) || isNaN(lng1) ||
+          isNaN(lat2) || isNaN(lng2) ||
+          isNaN(lat3) || isNaN(lng3)) {
         alert("Vui lòng nhập tọa độ hợp lệ.");
         return;
       }
 
-      const markersList = [
-        createMarker("tsbd", lat_tsbd, lng_tsbd, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", true),
-        createMarker("tsss1", lat1, lng1, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png"),
-        createMarker("tsss2", lat2, lng2, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png"),
-        createMarker("tsss3", lat3, lng3, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png")
-      ];
+      createMarker(lat_tsbd, lng_tsbd, "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", true);
+      createMarker(lat1, lng1, "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
+      createMarker(lat2, lng2, "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
+      createMarker(lat3, lng3, "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
 
-      map.fitBounds(markersList.map(marker => marker.getLatLng())); // Điều chỉnh bản đồ để chứa tất cả các marker
+      createLabel("tsbd", "TSBĐ", lat_tsbd, lng_tsbd);
+      createLabel("tsss1", "TSSS 1", lat1, lng1);
+      createLabel("tsss2", "TSSS 2", lat2, lng2);
+      createLabel("tsss3", "TSSS 3", lat3, lng3);
+
+      map.setView([lat_tsbd, lng_tsbd], 17);
     }
 
     function takeScreenshot() {
