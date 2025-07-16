@@ -88,9 +88,18 @@
 <body>
   <div class="controls">
     <div><strong>TSBĐ:</strong><br><input id="tsbd" value="" placeholder="Lat, Lng" /></div>
-    <div><strong>TSSS1:</strong><br><input id="tsss1" value="" placeholder="Lat, Lng" /></div>
-    <div><strong>TSSS2:</strong><br><input id="tsss2" value="" placeholder="Lat, Lng" /></div>
-    <div><strong>TSSS3:</strong><br><input id="tsss3" value="" placeholder="Lat, Lng" /></div>
+    <div><strong>TSSS1:</strong><br>
+      <input id="tsss1" value="" placeholder="Lat, Lng" />
+      <span id="dist-tsss1" style="margin-left:8px; color:#f2c94c; font-weight:bold;"></span>
+    </div>
+    <div><strong>TSSS2:</strong><br>
+      <input id="tsss2" value="" placeholder="Lat, Lng" />
+      <span id="dist-tsss2" style="margin-left:8px; color:#f2c94c; font-weight:bold;"></span>
+    </div>
+    <div><strong>TSSS3:</strong><br>
+      <input id="tsss3" value="" placeholder="Lat, Lng" />
+      <span id="dist-tsss3" style="margin-left:8px; color:#f2c94c; font-weight:bold;"></span>
+    </div>
     <div style="text-align: center">
       <button onclick="updateMarkers()">Cập nhật</button>
       <button onclick="takeScreenshot()">Chụp ảnh</button>
@@ -118,24 +127,34 @@
       position: 'topright'
     }).addTo(map);
 
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      function toRad(deg) {
+        return deg * Math.PI / 180;
+      }
+      const R = 6371;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat/2)**2 +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return (R * c).toFixed(2);
+    }
+
     function createMarker(id, lat, lng, labelText, imageUrl, isTSBD = false) {
       if (markers[id]) {
         map.removeLayer(markers[id]);
       }
-
       const iconHtml = `
         <div class="label-icon">
           <div class="label-box">${labelText}</div>
           <img src="${imageUrl}" class="${isTSBD ? 'tsbd-img' : 'label-img'}" />
         </div>
       `;
-
       const icon = L.divIcon({
         className: "",
         html: iconHtml,
         iconAnchor: [20, 50]
       });
-
       const marker = L.marker([lat, lng], { icon }).addTo(map);
       markers[id] = marker;
     }
@@ -148,31 +167,33 @@
         tsss3: document.getElementById("tsss3").value
       };
 
+      let tsbdLat = null, tsbdLng = null;
       const positions = [];
 
       if (inputs.tsbd) {
         const [lat, lng] = inputs.tsbd.split(',').map(Number);
+        tsbdLat = lat; tsbdLng = lng;
         createMarker("tsbd", lat, lng, "TSBĐ", "Bieu-Tuong-Logo-Ngan-Hang-BIDV.png", true);
         positions.push([lat, lng]);
       }
 
-      if (inputs.tsss1) {
-        const [lat, lng] = inputs.tsss1.split(',').map(Number);
-        createMarker("tsss1", lat, lng, "TSSS 1", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
-        positions.push([lat, lng]);
+      function handleTSSS(id, label) {
+        if (inputs[id]) {
+          const [lat, lng] = inputs[id].split(',').map(Number);
+          createMarker(id, lat, lng, label, "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
+          positions.push([lat, lng]);
+          if (tsbdLat !== null) {
+            const dist = calculateDistance(tsbdLat, tsbdLng, lat, lng);
+            document.getElementById(`dist-${id}`).innerText = `${dist} km`;
+          }
+        } else {
+          document.getElementById(`dist-${id}`).innerText = "";
+        }
       }
 
-      if (inputs.tsss2) {
-        const [lat, lng] = inputs.tsss2.split(',').map(Number);
-        createMarker("tsss2", lat, lng, "TSSS 2", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
-        positions.push([lat, lng]);
-      }
-
-      if (inputs.tsss3) {
-        const [lat, lng] = inputs.tsss3.split(',').map(Number);
-        createMarker("tsss3", lat, lng, "TSSS 3", "pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png");
-        positions.push([lat, lng]);
-      }
+      handleTSSS("tsss1", "TSSS 1");
+      handleTSSS("tsss2", "TSSS 2");
+      handleTSSS("tsss3", "TSSS 3");
 
       if (positions.length > 0) {
         map.fitBounds(positions);
