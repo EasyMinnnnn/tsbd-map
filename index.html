@@ -19,13 +19,11 @@
       margin: 0;
       font-family: Arial, sans-serif;
     }
-
-    /* Full‑screen map */
+    /* Full-screen map */
     #map {
       width: 100vw;
       height: 100vh;
     }
-
     /* Control panel styling */
     .controls {
       position: absolute;
@@ -36,26 +34,19 @@
       border-radius: 8px;
       color: white;
       z-index: 1000;
-      /* Set a fixed width for the control panel to ensure the right edge
-         is aligned and balanced with the left edge. Using box-sizing
-         ensures padding and borders are included, preventing overflow. */
+      /* Fixed width for balanced left and right edges */
       width: 380px;
       box-sizing: border-box;
     }
-
     .controls input {
       margin: 4px 0;
       padding: 6px;
       border-radius: 4px;
       border: none;
-      /* Expand input to use full width of the control panel */
       width: 100%;
       font-size: 14px;
-      /* Include padding and border in the element's total width to
-         prevent horizontal overflow and keep the right edge aligned */
       box-sizing: border-box;
     }
-
     .controls button {
       background-color: #f2c94c;
       color: black;
@@ -66,15 +57,12 @@
       border-radius: 4px;
       cursor: pointer;
     }
-
-    /* Custom label + icon wrapper */
+    /* Marker label styling */
     .label-icon {
       display: flex;
       flex-direction: column;
       align-items: center;
     }
-
-    /* Label styling */
     .label-box {
       background-color: #007d78;
       color: #f2c94c;
@@ -87,8 +75,6 @@
       box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
       position: relative;
     }
-
-    /* Little arrow under label */
     .label-box::after {
       content: "";
       position: absolute;
@@ -101,14 +87,11 @@
       border-right: 8px solid transparent;
       border-top: 10px solid #007d78;
     }
-
-    /* Image sizes for markers */
     .label-img {
       width: 35px;
       height: 35px;
       margin-top: 4px;
     }
-
     .tsbd-img {
       width: 40px;
       height: 40px;
@@ -116,13 +99,10 @@
   </style>
 </head>
 <body>
-  <!-- Control panel for inputs and actions -->
   <div class="controls">
-    <!-- TSBD coordinate input -->
     <div>
       <strong>TSBĐ:</strong><br /><input id="tsbd" value="" placeholder="Lat, Lng" />
     </div>
-    <!-- TSSS comparables -->
     <div>
       <strong>TSSS1:</strong><br />
       <input id="tsss1" value="" placeholder="Lat, Lng" />
@@ -141,8 +121,6 @@
       <span style="margin-left: 4px; color: #f2c94c;"></span>
       <span id="dist-tsss3" style="margin-left: 2px; color: #f2c94c; font-weight: bold;"></span>
     </div>
-
-    <!-- Amenities section: displays each amenity type in its own read‑only box -->
     <div style="margin-top:8px;">
       <strong>Tiện ích:</strong><br />
       <input id="amenity-school" value="Trường" readonly /><br />
@@ -150,92 +128,56 @@
       <input id="amenity-bus_station" value="Bến xe" readonly /><br />
       <input id="amenity-marketplace" value="Chợ" readonly />
     </div>
-
-    <!-- Container where amenity results will be displayed -->
     <div id="amenities-info" style="margin-top: 8px; color: #f2c94c;"></div>
-
-    <!-- Action buttons -->
     <div style="text-align: center">
       <button onclick="updateMarkers()">Cập nhật</button>
       <button onclick="takeScreenshot()">Chụp ảnh</button>
       <button onclick="searchAmenities()">Kiểm tra tiện ích</button>
     </div>
   </div>
-
-  <!-- Map container -->
   <div id="map"></div>
 
-  <!-- Leaflet library -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- Screenshoter library -->
   <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
 
   <script>
-    // Default view centred over Hanoi
     const defaultCenter = [21.02971, 105.85712];
     const map = L.map('map').setView(defaultCenter, 17);
 
-    // Add the OSM base layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors,
+      attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Object to track all markers on the map by ID
     const markers = {};
 
-    // Configure the screenshot plugin
     const screenshoter = L.simpleMapScreenshoter({
       hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
       preventDownload: true,
       position: 'topright',
     }).addTo(map);
 
-    /**
-     * Calculate distance (in km) between two lat/lng points using the
-     * Haversine formula. Returns a number rounded to two decimals.
-     */
     function calculateDistance(lat1, lon1, lat2, lon2) {
-      function toRad(deg) {
-        return (deg * Math.PI) / 180;
-      }
-      const R = 6371; // Earth radius in km
+      function toRad(deg) { return (deg * Math.PI) / 180; }
+      const R = 6371;
       const dLat = toRad(lat2 - lat1);
       const dLon = toRad(lon2 - lon1);
-      const a =
-        Math.sin(dLat / 2) ** 2 +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
       return Number((R * c).toFixed(2));
     }
 
-    /**
-     * Create or replace a marker on the map. Each marker displays a label and
-     * an image below the label. When called with the same `id` multiple
-     * times, the previous marker is removed before adding the new one.
-     */
     function createMarker(id, lat, lng, labelText, imageUrl, isTSBD = false) {
-      if (markers[id]) {
-        map.removeLayer(markers[id]);
-      }
+      if (markers[id]) { map.removeLayer(markers[id]); }
       const iconHtml = `
         <div class="label-icon">
           <div class="label-box">${labelText}</div>
           <img src="${imageUrl}" class="${isTSBD ? 'tsbd-img' : 'label-img'}" />
         </div>
       `;
-      const icon = L.divIcon({
-        className: '',
-        html: iconHtml,
-        iconAnchor: [20, 50],
-      });
-      const marker = L.marker([lat, lng], { icon }).addTo(map);
-      markers[id] = marker;
+      const icon = L.divIcon({ className:'', html: iconHtml, iconAnchor:[20,50] });
+      markers[id] = L.marker([lat, lng], { icon }).addTo(map);
     }
 
-    /**
-     * Read coordinates from the TSBD and TSSS inputs, update markers on the
-     * map, and compute distances between the TSBD and TSSS points.
-     */
     function updateMarkers() {
       const inputs = {
         tsbd: document.getElementById('tsbd').value,
@@ -243,18 +185,14 @@
         tsss2: document.getElementById('tsss2').value,
         tsss3: document.getElementById('tsss3').value,
       };
-      let tsbdLat = null,
-        tsbdLng = null;
+      let tsbdLat = null, tsbdLng = null;
       const positions = [];
-      // Handle TSBD marker
       if (inputs.tsbd) {
         const [lat, lng] = inputs.tsbd.split(',').map(Number);
-        tsbdLat = lat;
-        tsbdLng = lng;
+        tsbdLat = lat; tsbdLng = lng;
         createMarker('tsbd', lat, lng, 'TSBĐ', 'Bieu-Tuong-Logo-Ngan-Hang-BIDV.png', true);
         positions.push([lat, lng]);
       }
-      // Helper to handle TSSS markers
       function handleTSSS(id, label) {
         if (inputs[id]) {
           const [lat, lng] = inputs[id].split(',').map(Number);
@@ -264,31 +202,19 @@
             const dist = calculateDistance(tsbdLat, tsbdLng, lat, lng);
             document.getElementById(`dist-${id}`).innerText = `${dist} km`;
           }
-        } else {
-          document.getElementById(`dist-${id}`).innerText = '';
-        }
+        } else { document.getElementById(`dist-${id}`).innerText = ''; }
       }
-      handleTSSS('tsss1', 'TSSS 1');
-      handleTSSS('tsss2', 'TSSS 2');
-      handleTSSS('tsss3', 'TSSS 3');
-      if (positions.length > 0) {
-        map.fitBounds(positions);
-      }
+      handleTSSS('tsss1','TSSS 1');
+      handleTSSS('tsss2','TSSS 2');
+      handleTSSS('tsss3','TSSS 3');
+      if (positions.length > 0) { map.fitBounds(positions); }
     }
 
-    /**
-     * Capture a screenshot of the current map view. The image will be
-     * downloaded automatically with a file name that includes the TSBD
-     * coordinates for easy reference.
-     */
     function takeScreenshot() {
-      const [lat, lng] = document
-        .getElementById('tsbd')
-        .value.split(',')
-        .map((x) => x.trim());
+      const [lat, lng] = document.getElementById('tsbd').value.split(',').map(x => x.trim());
       const filename = `TSBD_${lat},${lng}.png`;
       setTimeout(() => {
-        screenshoter.takeScreen('blob').then((blob) => {
+        screenshoter.takeScreen('blob').then(blob => {
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
           link.download = filename;
@@ -299,47 +225,33 @@
       }, 800);
     }
 
-    /**
-     * List of amenities to search for. Each entry defines the Overpass
-     * "amenity" tag and a human‑friendly label. These will be used to
-     * construct queries and display results.
-     */
     const amenityTypes = [
-      { tag: 'school', label: 'Trường' },
-      { tag: 'hospital', label: 'Bệnh viện' },
-      { tag: 'bus_station', label: 'Bến xe' },
-      { tag: 'marketplace', label: 'Chợ' },
+      { tag:'school', label:'Trường' },
+      { tag:'hospital', label:'Bệnh viện' },
+      { tag:'bus_station', label:'Bến xe' },
+      { tag:'marketplace', label:'Chợ' },
     ];
 
-    /**
-     * Query the Overpass API to find the nearest amenity of a given type
-     * around the provided latitude and longitude.
-     */
     async function findNearestAmenity(lat, lon, tag) {
-      const radius = 3000; // metres
+      const radius = 3000;
       const query = `[out:json];node(around:${radius},${lat},${lon})[amenity=${tag}];out;`;
       const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
       const response = await fetch(url);
       const data = await response.json();
-      if (!data.elements || data.elements.length === 0) {
-        return null;
-      }
+      if (!data.elements || data.elements.length === 0) return null;
       let nearest = null;
       let minDist = Infinity;
-      data.elements.forEach((elem) => {
+      data.elements.forEach(elem => {
         const d = calculateDistance(lat, lon, elem.lat, elem.lon);
         if (d < minDist) {
           minDist = d;
           const name = (elem.tags && elem.tags.name) ? elem.tags.name : '';
-          nearest = { lat: elem.lat, lon: elem.lon, dist: d, name: name };
+          nearest = { lat: elem.lat, lon: elem.lon, dist: d, name };
         }
       });
       return nearest;
     }
 
-    /**
-     * Entry point for the "Kiểm tra tiện ích" button.
-     */
     async function searchAmenities() {
       const tsbdValue = document.getElementById('tsbd').value;
       if (!tsbdValue) {
@@ -347,18 +259,15 @@
         return;
       }
       const [lat, lon] = tsbdValue.split(',').map(Number);
-      const infoContainer = document.getElementById('amenities-info');
-      infoContainer.innerHTML = '';
-      amenityTypes.forEach((amenity) => {
+      document.getElementById('amenities-info').innerHTML = '';
+      amenityTypes.forEach(amenity => {
         const id = `amenity-${amenity.tag}`;
-        if (markers[id]) {
-          map.removeLayer(markers[id]);
-          delete markers[id];
-        }
+        if (markers[id]) { map.removeLayer(markers[id]); delete markers[id]; }
       });
       for (const amenity of amenityTypes) {
         try {
           const nearest = await findNearestAmenity(lat, lon, amenity.tag);
+          const inputElem = document.getElementById(`amenity-${amenity.tag}`);
           if (nearest) {
             createMarker(
               `amenity-${amenity.tag}`,
@@ -368,12 +277,10 @@
               'pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png'
             );
             const nameText = nearest.name && nearest.name.trim() !== '' ? nearest.name : '(không tên)';
-            const inputElem = document.getElementById(`amenity-${amenity.tag}`);
             if (inputElem) {
               inputElem.value = `${amenity.label}: ${nameText} (${nearest.dist} km)`;
             }
           } else {
-            const inputElem = document.getElementById(`amenity-${amenity.tag}`);
             if (inputElem) {
               inputElem.value = `${amenity.label}: Không tìm thấy trong phạm vi 3 km`;
             }
