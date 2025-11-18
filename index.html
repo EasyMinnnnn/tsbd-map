@@ -134,6 +134,15 @@
       <span id="dist-tsss3" style="margin-left: 2px; color: #f2c94c; font-weight: bold;"></span>
     </div>
 
+    <!-- Amenities section: displays each amenity type in its own read‑only box -->
+    <div style="margin-top:8px;">
+      <strong>Tiện ích:</strong><br />
+      <input id="amenity-school" value="Trường" readonly /><br />
+      <input id="amenity-hospital" value="Bệnh viện" readonly /><br />
+      <input id="amenity-bus_station" value="Bến xe" readonly /><br />
+      <input id="amenity-marketplace" value="Chợ" readonly />
+    </div>
+
     <!-- Container where amenity results will be displayed -->
     <div id="amenities-info" style="margin-top: 8px; color: #f2c94c;"></div>
 
@@ -376,10 +385,15 @@
               amenity.label,
               'pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png'
             );
-            // Display name and distance in the control panel. If the
-            // amenity has a name, show it; otherwise indicate that
-            // there is no name. Only the first (nearest) result is used.
+            // Determine the name to display. If the amenity has a name,
+            // show it; otherwise indicate that there is no name.
             const nameText = nearest.name && nearest.name.trim() !== '' ? nearest.name : '(không tên)';
+            // Update the corresponding read‑only input with the found name
+            const inputElem = document.getElementById(`amenity-${amenity.tag}`);
+            if (inputElem) {
+              inputElem.value = nameText;
+            }
+            // Display name and distance in the control panel.
             const distText = `${amenity.label}: ${nameText} (${nearest.dist} km)`;
             const item = document.createElement('div');
             item.textContent = distText;
@@ -389,6 +403,11 @@
             const item = document.createElement('div');
             item.textContent = `${amenity.label}: Không tìm thấy trong phạm vi 3 km`;
             infoContainer.appendChild(item);
+            // Also reset the corresponding read‑only input to its default label
+            const inputElem = document.getElementById(`amenity-${amenity.tag}`);
+            if (inputElem) {
+              inputElem.value = amenity.label;
+            }
           }
         } catch (err) {
           console.error('Error searching amenity', amenity.tag, err);
