@@ -36,8 +36,11 @@
       border-radius: 8px;
       color: white;
       z-index: 1000;
-      /* Increase max-width so that long amenity names fit better */
-      max-width: 380px;
+      /* Set a fixed width for the control panel to ensure the right edge
+         is aligned and balanced with the left edge. Using box-sizing
+         ensures padding and borders are included, preventing overflow. */
+      width: 380px;
+      box-sizing: border-box;
     }
 
     .controls input {
@@ -48,6 +51,9 @@
       /* Expand input to use full width of the control panel */
       width: 100%;
       font-size: 14px;
+      /* Include padding and border in the element's total width to
+         prevent horizontal overflow and keep the right edge aligned */
+      box-sizing: border-box;
     }
 
     .controls button {
@@ -171,7 +177,7 @@
 
     // Add the OSM base layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
+      attribution: '&copy; OpenStreetMap contributors,
     }).addTo(map);
 
     // Object to track all markers on the map by ID
@@ -208,11 +214,9 @@
      * times, the previous marker is removed before adding the new one.
      */
     function createMarker(id, lat, lng, labelText, imageUrl, isTSBD = false) {
-      // Remove any existing marker with the same ID
       if (markers[id]) {
         map.removeLayer(markers[id]);
       }
-      // Create HTML content for the marker (label + image)
       const iconHtml = `
         <div class="label-icon">
           <div class="label-box">${labelText}</div>
@@ -298,7 +302,7 @@
     /**
      * List of amenities to search for. Each entry defines the Overpass
      * "amenity" tag and a human‑friendly label. These will be used to
-     * construct queries and display results to the user.
+     * construct queries and display results.
      */
     const amenityTypes = [
       { tag: 'school', label: 'Trường' },
@@ -335,8 +339,6 @@
 
     /**
      * Entry point for the "Kiểm tra tiện ích" button.
-     * Reads the TSBD coordinates, queries the Overpass API for each amenity type,
-     * and updates the read‑only inputs with the result.
      */
     async function searchAmenities() {
       const tsbdValue = document.getElementById('tsbd').value;
