@@ -36,7 +36,8 @@
       border-radius: 8px;
       color: white;
       z-index: 1000;
-      max-width: 280px;
+      /* Increase max-width so that long amenity names fit better */
+      max-width: 380px;
     }
 
     .controls input {
@@ -44,7 +45,8 @@
       padding: 6px;
       border-radius: 4px;
       border: none;
-      width: 220px;
+      /* Expand input to use full width of the control panel */
+      width: 100%;
       font-size: 14px;
     }
 
@@ -143,7 +145,7 @@
       <input id="amenity-marketplace" value="Chợ" readonly />
     </div>
 
-    <!-- Container where amenity results will be displayed (unused now) -->
+    <!-- Container where amenity results will be displayed -->
     <div id="amenities-info" style="margin-top: 8px; color: #f2c94c;"></div>
 
     <!-- Action buttons -->
@@ -204,13 +206,6 @@
      * Create or replace a marker on the map. Each marker displays a label and
      * an image below the label. When called with the same `id` multiple
      * times, the previous marker is removed before adding the new one.
-     *
-     * @param {string} id Unique identifier for the marker
-     * @param {number} lat Latitude
-     * @param {number} lng Longitude
-     * @param {string} labelText Text shown in the coloured label
-     * @param {string} imageUrl URL to the image to display under the label
-     * @param {boolean} isTSBD Whether this is the main TSBD marker (affects size)
      */
     function createMarker(id, lat, lng, labelText, imageUrl, isTSBD = false) {
       // Remove any existing marker with the same ID
@@ -235,8 +230,7 @@
 
     /**
      * Read coordinates from the TSBD and TSSS inputs, update markers on the
-     * map, and compute distances between the TSBD and TSSS points. If a
-     * coordinate field is empty, its marker and distance will be cleared.
+     * map, and compute distances between the TSBD and TSSS points.
      */
     function updateMarkers() {
       const inputs = {
@@ -315,17 +309,10 @@
 
     /**
      * Query the Overpass API to find the nearest amenity of a given type
-     * around the provided latitude and longitude. The search uses a
-     * generous radius (3 km) and then filters the results client‑side to
-     * select the closest feature. Returns an object with lat/lon or null.
-     *
-     * @param {number} lat Latitude of the TSBD
-     * @param {number} lon Longitude of the TSBD
-     * @param {string} tag Overpass "amenity" tag to search for
+     * around the provided latitude and longitude.
      */
     async function findNearestAmenity(lat, lon, tag) {
       const radius = 3000; // metres
-      // Compose Overpass query: search nodes with the given amenity tag within radius
       const query = `[out:json];node(around:${radius},${lat},${lon})[amenity=${tag}];out;`;
       const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
       const response = await fetch(url);
@@ -339,7 +326,6 @@
         const d = calculateDistance(lat, lon, elem.lat, elem.lon);
         if (d < minDist) {
           minDist = d;
-          // capture the name of the amenity if available
           const name = (elem.tags && elem.tags.name) ? elem.tags.name : '';
           nearest = { lat: elem.lat, lon: elem.lon, dist: d, name: name };
         }
@@ -348,10 +334,9 @@
     }
 
     /**
-     * Entry point for the "Kiểm tra tiện ích" button. Reads the TSBD
-     * coordinates, queries the Overpass API for each amenity type, drops
-     * markers on the map and updates the read‑only inputs with the result.
-     * If no TSBD coordinates are provided, the user is prompted to supply them first.
+     * Entry point for the "Kiểm tra tiện ích" button.
+     * Reads the TSBD coordinates, queries the Overpass API for each amenity type,
+     * and updates the read‑only inputs with the result.
      */
     async function searchAmenities() {
       const tsbdValue = document.getElementById('tsbd').value;
@@ -361,9 +346,7 @@
       }
       const [lat, lon] = tsbdValue.split(',').map(Number);
       const infoContainer = document.getElementById('amenities-info');
-      // Clear previous info (we no longer display details here)
       infoContainer.innerHTML = '';
-      // Remove existing amenity markers
       amenityTypes.forEach((amenity) => {
         const id = `amenity-${amenity.tag}`;
         if (markers[id]) {
@@ -371,12 +354,10 @@
           delete markers[id];
         }
       });
-      // For each amenity type, find the nearest POI
       for (const amenity of amenityTypes) {
         try {
           const nearest = await findNearestAmenity(lat, lon, amenity.tag);
           if (nearest) {
-            // Create marker on map using the generic flag icon
             createMarker(
               `amenity-${amenity.tag}`,
               nearest.lat,
@@ -384,16 +365,12 @@
               amenity.label,
               'pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png'
             );
-            // Determine the name to display. If the amenity has a name,
-            // show it; otherwise indicate that there is no name.
             const nameText = nearest.name && nearest.name.trim() !== '' ? nearest.name : '(không tên)';
-            // Update the corresponding read‑only input to include both label, name and distance
             const inputElem = document.getElementById(`amenity-${amenity.tag}`);
             if (inputElem) {
               inputElem.value = `${amenity.label}: ${nameText} (${nearest.dist} km)`;
             }
           } else {
-            // No POI found within radius – update the input with a message
             const inputElem = document.getElementById(`amenity-${amenity.tag}`);
             if (inputElem) {
               inputElem.value = `${amenity.label}: Không tìm thấy trong phạm vi 3 km`;
@@ -401,7 +378,6 @@
           }
         } catch (err) {
           console.error('Error searching amenity', amenity.tag, err);
-          // On error, update the input with an error message
           const inputElem = document.getElementById(`amenity-${amenity.tag}`);
           if (inputElem) {
             inputElem.value = `${amenity.label}: Lỗi khi tìm kiếm`;
