@@ -1,3 +1,4 @@
+Lộc Đỗ, [18/11/2025 8:08 PM]
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -34,7 +35,6 @@
       border-radius: 8px;
       color: white;
       z-index: 1000;
-      /* Fixed width for balanced left and right edges */
       width: 380px;
       box-sizing: border-box;
     }
@@ -121,8 +121,17 @@
       <span style="margin-left: 4px; color: #f2c94c;"></span>
       <span id="dist-tsss3" style="margin-left: 2px; color: #f2c94c; font-weight: bold;"></span>
     </div>
+    <!-- Amenities section with adjustable radius -->
     <div style="margin-top:8px;">
       <strong>Tiện ích:</strong><br />
+      <div style="display: flex; align-items: center; margin: 4px 0;">
+        <button type="button" onclick="adjustRadius(-0.5)" style="background-color:#f2c94c; color:black; border:none; padding:2px 8px; border-radius:4px; font-weight:bold; cursor:pointer;">-</button>
+        <input id="search-radius" type="number" value="1" readonly style="width: 60px; text-align:center; margin: 0 4px; border-radius:4px; border:none; padding:4px;" />
+
+Lộc Đỗ, [18/11/2025 8:08 PM]
+<span style="margin-right:4px;">km</span>
+        <button type="button" onclick="adjustRadius(0.5)" style="background-color:#f2c94c; color:black; border:none; padding:2px 8px; border-radius:4px; font-weight:bold; cursor:pointer;">+</button>
+      </div>
       <input id="amenity-school" value="Trường" readonly /><br />
       <input id="amenity-hospital" value="Bệnh viện" readonly /><br />
       <input id="amenity-bus_station" value="Bến xe" readonly /><br />
@@ -139,8 +148,22 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.min.js"></script>
-
   <script>
+    // Global search radius in kilometres. Default: 1 km.
+    let searchRadius = 1;
+
+    /**
+     * Adjust the global search radius by a specified delta. The value is clamped
+     * to a minimum of 0.5 km. After adjustment, update the display input.
+     */
+    function adjustRadius(delta) {
+      searchRadius = Math.max(0.5, parseFloat((searchRadius + delta).toFixed(1)));
+      const radiusInput = document.getElementById('search-radius');
+      if (radiusInput) {
+        radiusInput.value = searchRadius;
+      }
+    }
+
     const defaultCenter = [21.02971, 105.85712];
     const map = L.map('map').setView(defaultCenter, 17);
 
@@ -161,19 +184,19 @@
       const R = 6371;
       const dLat = toRad(lat2 - lat1);
       const dLon = toRad(lon2 - lon1);
-      const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+      const a = Math.sin(dLat/2)2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)2;
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
       return Number((R * c).toFixed(2));
     }
 
     function createMarker(id, lat, lng, labelText, imageUrl, isTSBD = false) {
       if (markers[id]) { map.removeLayer(markers[id]); }
-      const iconHtml = `
+      const iconHtml = 
         <div class="label-icon">
           <div class="label-box">${labelText}</div>
           <img src="${imageUrl}" class="${isTSBD ? 'tsbd-img' : 'label-img'}" />
         </div>
-      `;
+      ;
       const icon = L.divIcon({ className:'', html: iconHtml, iconAnchor:[20,50] });
       markers[id] = L.marker([lat, lng], { icon }).addTo(map);
     }
@@ -196,13 +219,15 @@
       function handleTSSS(id, label) {
         if (inputs[id]) {
           const [lat, lng] = inputs[id].split(',').map(Number);
-          createMarker(id, lat, lng, label, 'pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png');
+
+Lộc Đỗ, [18/11/2025 8:08 PM]
+createMarker(id, lat, lng, label, 'pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png');
           positions.push([lat, lng]);
           if (tsbdLat !== null) {
             const dist = calculateDistance(tsbdLat, tsbdLng, lat, lng);
-            document.getElementById(`dist-${id}`).innerText = `${dist} km`;
+            document.getElementById(dist-${id}).innerText = ${dist} km;
           }
-        } else { document.getElementById(`dist-${id}`).innerText = ''; }
+        } else { document.getElementById(dist-${id}).innerText = ''; }
       }
       handleTSSS('tsss1','TSSS 1');
       handleTSSS('tsss2','TSSS 2');
@@ -212,7 +237,7 @@
 
     function takeScreenshot() {
       const [lat, lng] = document.getElementById('tsbd').value.split(',').map(x => x.trim());
-      const filename = `TSBD_${lat},${lng}.png`;
+      const filename = TSBD_${lat},${lng}.png;
       setTimeout(() => {
         screenshoter.takeScreen('blob').then(blob => {
           const link = document.createElement('a');
@@ -232,10 +257,10 @@
       { tag:'marketplace', label:'Chợ' },
     ];
 
-    async function findNearestAmenity(lat, lon, tag) {
-      const radius = 3000;
-      const query = `[out:json];node(around:${radius},${lat},${lon})[amenity=${tag}];out;`;
-      const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+    async function findNearestAmenity(lat, lon, tag, radiusKm) {
+      const radius = radiusKm * 1000;
+      const query = [out:json];node(around:${radius},${lat},${lon})[amenity=${tag}];out;;
+      const url = https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)};
       const response = await fetch(url);
       const data = await response.json();
       if (!data.elements || data.elements.length === 0) return null;
@@ -261,16 +286,16 @@
       const [lat, lon] = tsbdValue.split(',').map(Number);
       document.getElementById('amenities-info').innerHTML = '';
       amenityTypes.forEach(amenity => {
-        const id = `amenity-${amenity.tag}`;
+        const id = amenity-${amenity.tag};
         if (markers[id]) { map.removeLayer(markers[id]); delete markers[id]; }
       });
       for (const amenity of amenityTypes) {
         try {
-          const nearest = await findNearestAmenity(lat, lon, amenity.tag);
-          const inputElem = document.getElementById(`amenity-${amenity.tag}`);
+          const nearest = await findNearestAmenity(lat, lon, amenity.tag, searchRadius);
+          const inputElem = document.getElementById(amenity-${amenity.tag});
           if (nearest) {
             createMarker(
-              `amenity-${amenity.tag}`,
+              amenity-${amenity.tag},
               nearest.lat,
               nearest.lon,
               amenity.label,
@@ -278,18 +303,18 @@
             );
             const nameText = nearest.name && nearest.name.trim() !== '' ? nearest.name : '(không tên)';
             if (inputElem) {
-              inputElem.value = `${amenity.label}: ${nameText} (${nearest.dist} km)`;
+              inputElem.value = ${amenity.label}: ${nameText} (${nearest.dist} km);
             }
           } else {
             if (inputElem) {
-              inputElem.value = `${amenity.label}: Không tìm thấy trong phạm vi 3 km`;
+              inputElem.value = ${amenity.label}: Không tìm thấy trong phạm vi ${searchRadius} km;
             }
           }
         } catch (err) {
           console.error('Error searching amenity', amenity.tag, err);
-          const inputElem = document.getElementById(`amenity-${amenity.tag}`);
+          const inputElem = document.getElementById(amenity-${amenity.tag});
           if (inputElem) {
-            inputElem.value = `${amenity.label}: Lỗi khi tìm kiếm`;
+            inputElem.value = ${amenity.label}: Lỗi khi tìm kiếm;
           }
         }
       }
