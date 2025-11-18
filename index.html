@@ -105,9 +105,13 @@
       <span id="dist-tsss3" style="margin-left:2px; color:#f2c94c; font-weight:bold;"></span>
     </div>
 
+    <!-- Khu vực hiển thị thông tin tiện ích -->
+    <div id="amenities-info" style="margin-top:8px; color:#f2c94c;"></div>
+
     <div style="text-align: center">
       <button onclick="updateMarkers()">Cập nhật</button>
       <button onclick="takeScreenshot()">Chụp ảnh</button>
+      <button onclick="searchAmenities()">Kiểm tra tiện ích</button>
     </div>
   </div>
 
@@ -142,7 +146,7 @@
       const a = Math.sin(dLat/2)**2 +
                 Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return (R * c).toFixed(2);
+      return parseFloat((R * c).toFixed(2));
     }
 
     function createMarker(id, lat, lng, labelText, imageUrl, isTSBD = false) {
@@ -218,6 +222,88 @@
           document.body.removeChild(link);
         });
       }, 800);
+    }
+
+    // Danh sách loại tiện ích cần tìm
+    const amenityTypes = [
+      { tag: 'school', label: 'Trường' },
+      { tag: 'hospital', label: 'Bệnh viện' },
+      { tag: 'bus_station', label: 'Bến xe' },
+      { tag: 'marketplace', label: 'Chợ' },
+    ];
+
+    // Tìm tiện ích gần nhất theo loại bằng Overpass API
+    async function findNearestAmenity(lat, lon, tag) {
+      const radius = 3000; // mét
+      const query = `[out:json];node(around:${radius},${lat},${lon})[amenity=${tag}];out;`;
+      const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (!data.elements || data.elements.length === 0) {
+        return null;
+      }
+      let nearest = null;
+      let minDist = Infinity;
+      data.elements.forEach((elem) => {
+        const d = calculateDistance(lat, lon, elem.lat, elem.lon);
+        if (d < minDist) {
+          minDist = d;
+          nearest = { lat: elem.lat, lon: elem.lon, dist: d };
+        }
+      });
+      return nearest;
+    }
+
+    // Xử lý khi nhấn nút "Kiểm tra tiện ích"
+    async function searchAmenities() {
+      const tsbdValue = document.getElementById('tsbd').value;
+      if (!tsbdValue) {
+        alert('Vui lòng nhập tọa độ TSBĐ trước khi kiểm tra tiện ích.');
+        return;
+      }
+      const [lat, lon] = tsbdValue.split(',').map(Number);
+      const infoContainer = document.getElementById('amenities-info');
+      // Xóa thông tin cũ
+      infoContainer.innerHTML = '';
+      // Xóa marker tiện ích cũ
+      amenityTypes.forEach((amenity) => {
+        const id = `amenity-${amenity.tag}`;
+        if (markers[id]) {
+          map.removeLayer(markers[id]);
+          delete markers[id];
+        }
+      });
+      // Tìm từng loại tiện ích
+      for (const amenity of amenityTypes) {
+        try {
+          const nearest = await findNearestAmenity(lat, lon, amenity.tag);
+          if (nearest) {
+            // Tạo marker tiện ích trên bản đồ (dùng icon quốc kỳ như cũ)
+            createMarker(
+              `amenity-${amenity.tag}`,
+              nearest.lat,
+              nearest.lon,
+              amenity.label,
+              'pngtree-circular-world-flag-vietnam-icon-png-image_4830539.png'
+            );
+            // Hiển thị khoảng cách
+            const distText = `${amenity.label}: ${nearest.dist} km`;
+            const item = document.createElement('div');
+            item.textContent = distText;
+            infoContainer.appendChild(item);
+          } else {
+            // Nếu không tìm thấy tiện ích
+            const item = document.createElement('div');
+            item.textContent = `${amenity.label}: Không tìm thấy trong phạm vi 3 km`;
+            infoContainer.appendChild(item);
+          }
+        } catch (err) {
+          console.error('Lỗi khi tìm tiện ích', amenity.tag, err);
+          const item = document.createElement('div');
+          item.textContent = `${amenity.label}: Lỗi khi tìm kiếm`;
+          infoContainer.appendChild(item);
+        }
+      }
     }
   </script>
 </body>
