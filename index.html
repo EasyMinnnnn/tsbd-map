@@ -143,7 +143,7 @@
       <input id="amenity-marketplace" value="Chợ" readonly />
     </div>
 
-    <!-- Container where amenity results will be displayed -->
+    <!-- Container where amenity results will be displayed (unused now) -->
     <div id="amenities-info" style="margin-top: 8px; color: #f2c94c;"></div>
 
     <!-- Action buttons -->
@@ -350,9 +350,8 @@
     /**
      * Entry point for the "Kiểm tra tiện ích" button. Reads the TSBD
      * coordinates, queries the Overpass API for each amenity type, drops
-     * markers on the map and updates a list of distances in the control
-     * panel. If no TSBD coordinates are provided, the user is prompted to
-     * supply them first.
+     * markers on the map and updates the read‑only inputs with the result.
+     * If no TSBD coordinates are provided, the user is prompted to supply them first.
      */
     async function searchAmenities() {
       const tsbdValue = document.getElementById('tsbd').value;
@@ -362,7 +361,7 @@
       }
       const [lat, lon] = tsbdValue.split(',').map(Number);
       const infoContainer = document.getElementById('amenities-info');
-      // Clear previous info
+      // Clear previous info (we no longer display details here)
       infoContainer.innerHTML = '';
       // Remove existing amenity markers
       amenityTypes.forEach((amenity) => {
@@ -388,32 +387,25 @@
             // Determine the name to display. If the amenity has a name,
             // show it; otherwise indicate that there is no name.
             const nameText = nearest.name && nearest.name.trim() !== '' ? nearest.name : '(không tên)';
-            // Update the corresponding read‑only input with the found name
+            // Update the corresponding read‑only input to include both label, name and distance
             const inputElem = document.getElementById(`amenity-${amenity.tag}`);
             if (inputElem) {
-              inputElem.value = nameText;
+              inputElem.value = `${amenity.label}: ${nameText} (${nearest.dist} km)`;
             }
-            // Display name and distance in the control panel.
-            const distText = `${amenity.label}: ${nameText} (${nearest.dist} km)`;
-            const item = document.createElement('div');
-            item.textContent = distText;
-            infoContainer.appendChild(item);
           } else {
-            // If no POI found within radius
-            const item = document.createElement('div');
-            item.textContent = `${amenity.label}: Không tìm thấy trong phạm vi 3 km`;
-            infoContainer.appendChild(item);
-            // Also reset the corresponding read‑only input to its default label
+            // No POI found within radius – update the input with a message
             const inputElem = document.getElementById(`amenity-${amenity.tag}`);
             if (inputElem) {
-              inputElem.value = amenity.label;
+              inputElem.value = `${amenity.label}: Không tìm thấy trong phạm vi 3 km`;
             }
           }
         } catch (err) {
           console.error('Error searching amenity', amenity.tag, err);
-          const item = document.createElement('div');
-          item.textContent = `${amenity.label}: Lỗi khi tìm kiếm`;
-          infoContainer.appendChild(item);
+          // On error, update the input with an error message
+          const inputElem = document.getElementById(`amenity-${amenity.tag}`);
+          if (inputElem) {
+            inputElem.value = `${amenity.label}: Lỗi khi tìm kiếm`;
+          }
         }
       }
     }
