@@ -15,16 +15,8 @@
     href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css"
   />
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    /* Full-screen map */
-    #map {
-      width: 100vw;
-      height: 100vh;
-    }
-    /* Control panel styling */
+    body { margin: 0; font-family: Arial, sans-serif; }
+    #map { width: 100vw; height: 100vh; }
     .controls {
       position: absolute;
       top: 10px;
@@ -56,12 +48,7 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    /* Marker label styling */
-    .label-icon {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+    .label-icon { display: flex; flex-direction: column; align-items: center; }
     .label-box {
       background-color: #007d78;
       color: #f2c94c;
@@ -86,15 +73,8 @@
       border-right: 8px solid transparent;
       border-top: 10px solid #007d78;
     }
-    .label-img {
-      width: 35px;
-      height: 35px;
-      margin-top: 4px;
-    }
-    .tsbd-img {
-      width: 40px;
-      height: 40px;
-    }
+    .label-img { width: 35px; height: 35px; margin-top: 4px; }
+    .tsbd-img { width: 40px; height: 40px; }
   </style>
 </head>
 <body>
@@ -238,15 +218,12 @@
       {
         id: 'school',
         label: 'Trường',
-        // gồm trường phổ thông, cao đẳng, đại học
         queries: [
           { key: 'amenity', value: 'school' },
           { key: 'amenity', value: 'college' },
           { key: 'amenity', value: 'university' }
         ],
-        // chỉ nhận các tên có từ khoá trường/thcs/thpt/cao đẳng/đại học
         nameFilter: /(trường|thcs|tiểu học|thpt|cao đẳng|đại học)/i,
-        // loại các trung tâm ngoại ngữ, language center
         nameExclude: /(anh ngữ|ngoại ngữ|tiếng anh|tiếng trung|language|center|trung tâm)/i
       },
       {
@@ -258,13 +235,11 @@
         id: 'bus_station',
         label: 'Bến xe',
         queries: [{ key: 'amenity', value: 'bus_station' }],
-        // Chỉ lấy các điểm có tên giống bến xe thật
         nameFilter: /bến\s*xe|bus\s*station/i
       },
       {
         id: 'market',
         label: 'Chợ/Cửa hàng',
-        // chợ + cửa hàng tiện lợi + siêu thị (Winmart, Vinmart, BigC…)
         queries: [
           { key: 'amenity', value: 'marketplace' },
           { key: 'shop', value: 'convenience' },
@@ -299,15 +274,20 @@
       }
     });
 
+    // Hàm tìm tiện ích gần nhất (node + way + relation)
     async function findNearestAmenityForType(lat, lon, amenity) {
       const radius = currentRadiusKm * 1000;
+
+      // Lấy node + way + relation, và trả về center cho area
       let query = '[out:json];(';
       amenity.queries.forEach(({ key, value }) => {
         query += `node(around:${radius},${lat},${lon})[${key}=${value}];`;
+        query += `way(around:${radius},${lat},${lon})[${key}=${value}];`;
+        query += `relation(around:${radius},${lat},${lon})[${key}=${value}];`;
       });
-      query += ');out;';
-      const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+      query += ');out center;';
 
+      const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
       const response = await fetch(url);
       const data = await response.json();
       if (!data.elements || data.elements.length === 0) return null;
@@ -316,22 +296,37 @@
       let minDist = Infinity;
 
       data.elements.forEach(elem => {
-        if (typeof elem.lat !== 'number' || typeof elem.lon !== 'number') return;
+        let eLat = null, eLon = null;
+
+        if (typeof elem.lat === 'number' && typeof elem.lon === 'number') {
+          // node
+          eLat = elem.lat;
+          eLon = elem.lon;
+        } else if (
+          elem.center &&
+          typeof elem.center.lat === 'number' &&
+          typeof elem.center.lon === 'number'
+        ) {
+          // way / relation (area) – dùng tâm
+          eLat = elem.center.lat;
+          eLon = elem.center.lon;
+        } else {
+          return; // không có toạ độ dùng được
+        }
+
         const name = (elem.tags && elem.tags.name) ? elem.tags.name : '';
 
-        // lọc theo nameFilter nếu có
         if (amenity.nameFilter && !amenity.nameFilter.test(name)) {
           return;
         }
-        // loại theo nameExclude nếu có
         if (amenity.nameExclude && amenity.nameExclude.test(name)) {
           return;
         }
 
-        const d = calculateDistance(lat, lon, elem.lat, elem.lon);
+        const d = calculateDistance(lat, lon, eLat, eLon);
         if (d < minDist) {
           minDist = d;
-          nearest = { lat: elem.lat, lon: elem.lon, dist: d, name };
+          nearest = { lat: eLat, lon: eLon, dist: d, name };
         }
       });
 
@@ -351,7 +346,6 @@
         infoDiv.textContent = `Đang tìm tiện ích trong phạm vi ${currentRadiusKm} km...`;
       }
 
-      // Xoá marker tiện ích cũ
       amenityTypes.forEach(amenity => {
         const markerKey = `amenity-${amenity.id}`;
         if (markers[markerKey]) {
