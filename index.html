@@ -101,7 +101,8 @@
 <body>
   <div class="controls">
     <div>
-      <strong>TSBĐ:</strong><br /><input id="tsbd" value="" placeholder="Lat, Lng" />
+      <strong>TSBĐ:</strong><br />
+      <input id="tsbd" value="" placeholder="Lat, Lng" />
     </div>
     <div>
       <strong>TSSS1:</strong><br />
@@ -128,6 +129,13 @@
       <input id="amenity-bus_station" value="Bến xe" readonly /><br />
       <input id="amenity-marketplace" value="Chợ" readonly />
     </div>
+    <!-- Bán kính tiện ích -->
+    <div style="margin-top:8px;">
+      <strong>Bán kính tiện ích:</strong><br />
+      <button type="button" onclick="decreaseRadius()">-</button>
+      <span id="radius-display">1</span> km
+      <button type="button" onclick="increaseRadius()">+</button>
+    </div>
     <div id="amenities-info" style="margin-top: 8px; color: #f2c94c;"></div>
     <div style="text-align: center">
       <button onclick="updateMarkers()">Cập nhật</button>
@@ -149,6 +157,9 @@
     }).addTo(map);
 
     const markers = {};
+
+    // Bán kính hiện tại (km) cho tiện ích, mặc định 1 km
+    let currentRadiusKm = 1;
 
     const screenshoter = L.simpleMapScreenshoter({
       hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
@@ -202,7 +213,9 @@
             const dist = calculateDistance(tsbdLat, tsbdLng, lat, lng);
             document.getElementById(`dist-${id}`).innerText = `${dist} km`;
           }
-        } else { document.getElementById(`dist-${id}`).innerText = ''; }
+        } else {
+          document.getElementById(`dist-${id}`).innerText = '';
+        }
       }
       handleTSSS('tsss1','TSSS 1');
       handleTSSS('tsss2','TSSS 2');
@@ -225,6 +238,29 @@
       }, 800);
     }
 
+    // Cập nhật hiển thị bán kính
+    function updateRadiusDisplay() {
+      const span = document.getElementById('radius-display');
+      if (span) {
+        span.textContent = currentRadiusKm;
+      }
+    }
+
+    function increaseRadius() {
+      currentRadiusKm += 1;
+      updateRadiusDisplay();
+    }
+
+    function decreaseRadius() {
+      if (currentRadiusKm > 1) {
+        currentRadiusKm -= 1;
+        updateRadiusDisplay();
+      }
+    }
+
+    // Gọi 1 lần khi load trang để chắc chắn hiển thị đúng
+    updateRadiusDisplay();
+
     const amenityTypes = [
       { tag:'school', label:'Trường' },
       { tag:'hospital', label:'Bệnh viện' },
@@ -233,7 +269,8 @@
     ];
 
     async function findNearestAmenity(lat, lon, tag) {
-      const radius = 3000;
+      // radius tính theo mét, từ currentRadiusKm (km)
+      const radius = currentRadiusKm * 1000;
       const query = `[out:json];node(around:${radius},${lat},${lon})[amenity=${tag}];out;`;
       const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
       const response = await fetch(url);
@@ -259,11 +296,17 @@
         return;
       }
       const [lat, lon] = tsbdValue.split(',').map(Number);
-      document.getElementById('amenities-info').innerHTML = '';
+
+      const infoDiv = document.getElementById('amenities-info');
+      if (infoDiv) {
+        infoDiv.textContent = `Đang tìm tiện ích trong phạm vi ${currentRadiusKm} km...`;
+      }
+
       amenityTypes.forEach(amenity => {
         const id = `amenity-${amenity.tag}`;
         if (markers[id]) { map.removeLayer(markers[id]); delete markers[id]; }
       });
+
       for (const amenity of amenityTypes) {
         try {
           const nearest = await findNearestAmenity(lat, lon, amenity.tag);
@@ -282,7 +325,7 @@
             }
           } else {
             if (inputElem) {
-              inputElem.value = `${amenity.label}: Không tìm thấy trong phạm vi 3 km`;
+              inputElem.value = `${amenity.label}: Không tìm thấy trong phạm vi ${currentRadiusKm} km`;
             }
           }
         } catch (err) {
@@ -292,6 +335,10 @@
             inputElem.value = `${amenity.label}: Lỗi khi tìm kiếm`;
           }
         }
+      }
+
+      if (infoDiv) {
+        infoDiv.textContent = `Đã kiểm tra tiện ích trong phạm vi ${currentRadiusKm} km.`;
       }
     }
   </script>
