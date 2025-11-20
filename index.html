@@ -5,25 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bản đồ TSBĐ &amp; TSSS - BIDV</title>
   <!-- Leaflet styles -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <!-- Screenshoter styles -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css"
-  />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-simple-map-screenshoter@0.5.0/dist/leaflet-simple-map-screenshoter.css" />
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
+    body { margin: 0; font-family: Arial, sans-serif; }
     /* Full-screen map */
-    #map {
-      width: 100vw;
-      height: 100vh;
-    }
+    #map { width: 100vw; height: 100vh; }
     /* Control panel styling */
     .controls {
       position: absolute;
@@ -34,68 +22,32 @@
       border-radius: 8px;
       color: white;
       z-index: 1000;
-      /* Fixed width for balanced left and right edges */
       width: 380px;
       box-sizing: border-box;
     }
     .controls input {
-      margin: 4px 0;
-      padding: 6px;
-      border-radius: 4px;
-      border: none;
-      width: 100%;
-      font-size: 14px;
-      box-sizing: border-box;
+      margin: 4px 0; padding: 6px; border-radius: 4px; border: none;
+      width: 100%; font-size: 14px; box-sizing: border-box;
     }
     .controls button {
-      background-color: #f2c94c;
-      color: black;
-      border: none;
-      padding: 6px 12px;
-      margin-top: 8px;
-      margin-right: 5px;
-      border-radius: 4px;
-      cursor: pointer;
+      background-color: #f2c94c; color: black; border: none;
+      padding: 6px 12px; margin-top: 8px; margin-right: 5px; border-radius: 4px; cursor: pointer;
     }
     /* Marker label styling */
-    .label-icon {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+    .label-icon { display: flex; flex-direction: column; align-items: center; }
     .label-box {
-      background-color: #007d78;
-      color: #f2c94c;
-      font-weight: bold;
-      padding: 6px 10px;
-      font-size: 13px;
-      border-radius: 6px;
-      border: 2px solid #007d78;
-      white-space: nowrap;
-      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-      position: relative;
+      background-color: #007d78; color: #f2c94c; font-weight: bold;
+      padding: 6px 10px; font-size: 13px; border-radius: 6px;
+      border: 2px solid #007d78; white-space: nowrap;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); position: relative;
     }
     .label-box::after {
-      content: "";
-      position: absolute;
-      bottom: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 8px solid transparent;
-      border-right: 8px solid transparent;
-      border-top: 10px solid #007d78;
+      content: ""; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+      width: 0; height: 0; border-left: 8px solid transparent;
+      border-right: 8px solid transparent; border-top: 10px solid #007d78;
     }
-    .label-img {
-      width: 35px;
-      height: 35px;
-      margin-top: 4px;
-    }
-    .tsbd-img {
-      width: 40px;
-      height: 40px;
-    }
+    .label-img { width: 35px; height: 35px; margin-top: 4px; }
+    .tsbd-img { width: 40px; height: 40px; }
   </style>
 </head>
 <body>
@@ -127,14 +79,14 @@
       <input id="amenity-school" value="Trường" readonly /><br />
       <input id="amenity-hospital" value="Bệnh viện" readonly /><br />
       <input id="amenity-bus_station" value="Bến xe" readonly /><br />
-      <input id="amenity-marketplace" value="Chợ" readonly />
+      <input id="amenity-market" value="Chợ/Cửa hàng" readonly />
     </div>
     <!-- Bán kính tiện ích -->
     <div style="margin-top:8px;">
-      <strong>Bán kính tiện ích:</strong><br />
-      <button type="button" onclick="decreaseRadius()">-</button>
+      <strong>Bán kính tìm kiếm (km):</strong><br />
+      <button id="radius-decrease" type="button">-</button>
       <span id="radius-display">1</span> km
-      <button type="button" onclick="increaseRadius()">+</button>
+      <button id="radius-increase" type="button">+</button>
     </div>
     <div id="amenities-info" style="margin-top: 8px; color: #f2c94c;"></div>
     <div style="text-align: center">
@@ -151,16 +103,11 @@
   <script>
     const defaultCenter = [21.02971, 105.85712];
     const map = L.map('map').setView(defaultCenter, 17);
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
     const markers = {};
-
-    // Bán kính hiện tại (km) cho tiện ích, mặc định 1 km
-    let currentRadiusKm = 1;
-
     const screenshoter = L.simpleMapScreenshoter({
       hideElementsWithSelectors: ['.leaflet-control-container', '.controls'],
       preventDownload: true,
@@ -238,40 +185,70 @@
       }, 800);
     }
 
-    // Cập nhật hiển thị bán kính
-    function updateRadiusDisplay() {
-      const span = document.getElementById('radius-display');
-      if (span) {
-        span.textContent = currentRadiusKm;
-      }
-    }
-
-    function increaseRadius() {
-      currentRadiusKm += 1;
-      updateRadiusDisplay();
-    }
-
-    function decreaseRadius() {
-      if (currentRadiusKm > 1) {
-        currentRadiusKm -= 1;
-        updateRadiusDisplay();
-      }
-    }
-
-    // Gọi 1 lần khi load trang để chắc chắn hiển thị đúng
-    updateRadiusDisplay();
-
+    // Amenity definitions with queries and filters
     const amenityTypes = [
-      { tag:'school', label:'Trường' },
-      { tag:'hospital', label:'Bệnh viện' },
-      { tag:'bus_station', label:'Bến xe' },
-      { tag:'marketplace', label:'Chợ' },
+      {
+        id: 'school',
+        label: 'Trường',
+        queries: [{ key: 'amenity', value: 'school' }]
+      },
+      {
+        id: 'hospital',
+        label: 'Bệnh viện',
+        queries: [{ key: 'amenity', value: 'hospital' }]
+      },
+      {
+        id: 'bus_station',
+        label: 'Bến xe',
+        queries: [{ key: 'amenity', value: 'bus_station' }],
+        // Chỉ lấy đối tượng có tên chứa “Bến xe” hoặc “Bus Station” để tránh nhầm nhà xe.
+        nameFilter: /bến\s*xe|bus\s*station/i
+      },
+      {
+        id: 'market',
+        label: 'Chợ/Cửa hàng',
+        // Gồm chợ (marketplace), cửa hàng tiện lợi và siêu thị
+        queries: [
+          { key: 'amenity', value: 'marketplace' },
+          { key: 'shop', value: 'convenience' },
+          { key: 'shop', value: 'supermarket' }
+        ]
+      }
     ];
 
-    async function findNearestAmenity(lat, lon, tag) {
-      // radius tính theo mét, từ currentRadiusKm (km)
+    // Bán kính hiện tại (km) cho tiện ích, mặc định 1 km
+    let currentRadiusKm = 1;
+
+    // Gắn sự kiện cho nút điều chỉnh bán kính sau khi DOM sẵn sàng
+    document.addEventListener('DOMContentLoaded', () => {
+      const radiusDisplay = document.getElementById('radius-display');
+      const radiusDecrease = document.getElementById('radius-decrease');
+      const radiusIncrease = document.getElementById('radius-increase');
+      if (radiusDisplay) radiusDisplay.innerText = currentRadiusKm;
+      if (radiusIncrease) {
+        radiusIncrease.addEventListener('click', () => {
+          currentRadiusKm += 1;
+          radiusDisplay.innerText = currentRadiusKm;
+        });
+      }
+      if (radiusDecrease) {
+        radiusDecrease.addEventListener('click', () => {
+          if (currentRadiusKm > 1) {
+            currentRadiusKm -= 1;
+            radiusDisplay.innerText = currentRadiusKm;
+          }
+        });
+      }
+    });
+
+    // Hàm tìm tiện ích gần nhất theo định nghĩa amenityTypes
+    async function findNearestAmenityForType(lat, lon, amenity) {
       const radius = currentRadiusKm * 1000;
-      const query = `[out:json];node(around:${radius},${lat},${lon})[amenity=${tag}];out;`;
+      let query = '[out:json];(';
+      amenity.queries.forEach(({ key, value }) => {
+        query += `node(around:${radius},${lat},${lon})[${key}=${value}];`;
+      });
+      query += ');out;';
       const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
       const response = await fetch(url);
       const data = await response.json();
@@ -279,6 +256,13 @@
       let nearest = null;
       let minDist = Infinity;
       data.elements.forEach(elem => {
+        if (typeof elem.lat !== 'number' || typeof elem.lon !== 'number') return;
+        if (amenity.nameFilter) {
+          const name = (elem.tags && elem.tags.name) ? elem.tags.name : '';
+          if (!amenity.nameFilter.test(name)) {
+            return;
+          }
+        }
         const d = calculateDistance(lat, lon, elem.lat, elem.lon);
         if (d < minDist) {
           minDist = d;
@@ -296,24 +280,25 @@
         return;
       }
       const [lat, lon] = tsbdValue.split(',').map(Number);
-
       const infoDiv = document.getElementById('amenities-info');
       if (infoDiv) {
         infoDiv.textContent = `Đang tìm tiện ích trong phạm vi ${currentRadiusKm} km...`;
       }
-
+      // Xóa marker tiện ích cũ
       amenityTypes.forEach(amenity => {
-        const id = `amenity-${amenity.tag}`;
-        if (markers[id]) { map.removeLayer(markers[id]); delete markers[id]; }
+        const markerKey = `amenity-${amenity.id}`;
+        if (markers[markerKey]) {
+          map.removeLayer(markers[markerKey]);
+          delete markers[markerKey];
+        }
       });
-
       for (const amenity of amenityTypes) {
         try {
-          const nearest = await findNearestAmenity(lat, lon, amenity.tag);
-          const inputElem = document.getElementById(`amenity-${amenity.tag}`);
+          const nearest = await findNearestAmenityForType(lat, lon, amenity);
+          const inputElem = document.getElementById(`amenity-${amenity.id}`);
           if (nearest) {
             createMarker(
-              `amenity-${amenity.tag}`,
+              `amenity-${amenity.id}`,
               nearest.lat,
               nearest.lon,
               amenity.label,
@@ -329,14 +314,13 @@
             }
           }
         } catch (err) {
-          console.error('Error searching amenity', amenity.tag, err);
-          const inputElem = document.getElementById(`amenity-${amenity.tag}`);
+          console.error('Error searching amenity', amenity.id, err);
+          const inputElem = document.getElementById(`amenity-${amenity.id}`);
           if (inputElem) {
             inputElem.value = `${amenity.label}: Lỗi khi tìm kiếm`;
           }
         }
       }
-
       if (infoDiv) {
         infoDiv.textContent = `Đã kiểm tra tiện ích trong phạm vi ${currentRadiusKm} km.`;
       }
